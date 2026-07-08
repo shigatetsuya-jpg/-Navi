@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理者ダッシュボード｜新歓ナビ</title>
+<style>
+  :root { --red:#e8442e; --red-dark:#c93520; --ink:#33302c; --sub:#8a827a; --bg:#f6f3f0; --line:#e8ded6; --shadow:0 2px 10px rgba(60,40,30,.07); }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",Meiryo,sans-serif; background:var(--bg); color:var(--ink); line-height:1.6; }
+  button { font-family:inherit; cursor:pointer; }
+  input, select, textarea { font-family:inherit; font-size:14px; }
+  a { color:inherit; text-decoration:none; }
+  header { background:#2d2824; color:#fff; }
+  .header-in { max-width:1100px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:12px; }
+  .logo-mark { width:28px; height:28px; border-radius:7px; background:var(--red); color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; }
+  .header-in h1 { font-size:16px; font-weight:800; }
+  .header-in .badge { font-size:10.5px; background:#575047; border-radius:999px; padding:2px 10px; }
+  .header-in .right { margin-left:auto; display:flex; gap:10px; align-items:center; font-size:12.5px; }
+  .header-in a:hover { text-decoration:underline; }
+  main { max-width:1100px; margin:0 auto; padding:24px 20px 60px; }
+  .btn { border:none; border-radius:999px; font-weight:700; font-size:13px; padding:8px 16px; transition:.15s; }
+  .btn-red { background:var(--red); color:#fff; } .btn-red:hover { background:var(--red-dark); }
+  .btn-green { background:#1e8a4c; color:#fff; }
+  .btn-ghost { background:#fff; border:1px solid var(--line); color:var(--ink); }
+  .btn-ghost:hover { border-color:var(--red); color:var(--red); }
+  .btn-danger { background:#fff; border:1px solid #e9b3ab; color:#c9351f; }
+  .btn-danger:hover { background:#fdeeeb; }
+
+  /* login */
+  .login-box { max-width:400px; margin:60px auto; background:#fff; border-radius:16px; box-shadow:var(--shadow); padding:30px; text-align:center; }
+  .login-box h2 { font-size:18px; margin:10px 0 4px; }
+  .login-box .note { font-size:12px; color:var(--sub); margin-bottom:18px; }
+  .login-box input { width:100%; border:1px solid var(--line); border-radius:9px; padding:10px 12px; margin-bottom:12px; }
+  .login-error { color:var(--red); font-size:12px; margin-bottom:10px; display:none; }
+  .demo-hint { margin-top:14px; font-size:11.5px; color:var(--sub); background:#fbf7f3; border-radius:8px; padding:8px; }
+
+  /* tabs */
+  .tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+  .tab { border:1px solid var(--line); background:#fff; border-radius:999px; padding:8px 16px; font-size:13px; font-weight:700; color:#5c554e; }
+  .tab.on { background:var(--red); border-color:var(--red); color:#fff; }
+  .tab .num { background:rgba(0,0,0,.12); border-radius:999px; padding:0 7px; font-size:11px; margin-left:4px; }
+  .tab.on .num { background:rgba(255,255,255,.25); }
+
+  .panel { background:#fff; border-radius:14px; box-shadow:var(--shadow); padding:20px; }
+  .panel h2 { font-size:16px; margin-bottom:4px; }
+  .panel .note { font-size:12.5px; color:var(--sub); margin-bottom:16px; }
+  .item { border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:12px; }
+  .item .head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .item .nm { font-weight:800; font-size:14.5px; }
+  .item .meta { font-size:12px; color:var(--sub); }
+  .item .actions { margin-left:auto; display:flex; gap:8px; }
+  .item .body { font-size:13px; color:#5c554e; margin-top:6px; }
+  .empty { text-align:center; color:var(--sub); font-size:13px; padding:30px 10px; }
+  .pill { font-size:10.5px; font-weight:800; border-radius:999px; padding:2px 9px; }
+
+  /* edit form */
+  .field { margin-bottom:12px; }
+  .field label { display:block; font-size:12px; font-weight:700; margin-bottom:4px; }
+  .field input, .field select, .field textarea { width:100%; border:1px solid var(--line); border-radius:9px; padding:8px 11px; }
+  .field textarea { min-height:64px; resize:vertical; }
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .edit-box { background:#fbf7f3; border-radius:10px; padding:14px; margin-top:12px; }
+  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; border-radius:999px; padding:10px 20px; font-size:13px; z-index:200; display:none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-in">
+    <span class="logo-mark">新</span>
+    <h1>新歓ナビ 管理者ダッシュボード</h1>
+    <span class="badge">デモモード（ブラウザ内保存）</span>
+    <div class="right">
+      <a href="index.html">← サイトに戻る</a>
+      <button class="btn btn-ghost" id="logoutBtn" style="display:none;" onclick="logout()">ログアウト</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ログイン -->
+  <div class="login-box" id="loginBox">
+    <div style="font-size:34px;">🔑</div>
+    <h2>管理者ログイン</h2>
+    <p class="note">サークル掲載の承認・編集・レビュー管理を行います。</p>
+    <div class="login-error" id="loginError">パスワードが違います。</div>
+    <input type="password" id="pwInput" placeholder="管理者パスワード" onkeydown="if(event.key==='Enter') login()">
+    <button class="btn btn-red" style="width:100%; padding:11px;" onclick="login()">ログイン</button>
+    <div class="demo-hint">🧪 デモ版のパスワード：<b>admin2026</b><br>（本番運用時はSupabase Auth等での認証に置き換えます）</div>
+  </div>
+
+  <!-- ダッシュボード -->
+  <div id="dashboard" style="display:none;">
+    <div class="tabs">
+      <button class="tab on" data-tab="pending" onclick="setTab('pending')">📮 掲載申請の承認<span class="num" id="numPending">0</span></button>
+      <button class="tab" data-tab="edit" onclick="setTab('edit')">✏️ 公開中サークルの編集<span class="num" id="numClubs">0</span></button>
+      <button class="tab" data-tab="reviews" onclick="setTab('reviews')">💬 レビュー管理<span class="num" id="numReviews">0</span></button>
+      <button class="tab" data-tab="trials" onclick="setTab('trials')">✉️ 体験申し込み一覧<span class="num" id="numTrials">0</span></button>
+    </div>
+    <div class="panel" id="panelArea"></div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script>
+const { DAYS, PERIODS, CAMPUSES, CATEGORIES, CAT_STYLE, K, load, save } = NAVI;
+const PW = "admin2026";
+let tab = "pending";
+
+/* ---------- 認証（デモ） ---------- */
+function login() {
+  if (document.getElementById("pwInput").value !== PW) {
+    document.getElementById("loginError").style.display = "block";
+    return;
+  }
+  sessionStorage.setItem(K.admin, "1");
+  showDashboard();
+}
+function logout() {
+  sessionStorage.removeItem(K.admin);
+  location.reload();
+}
+function showDashboard() {
+  document.getElementById("loginBox").style.display = "none";
+  document.getElementById("dashboard").style.display = "block";
+  document.getElementById("logoutBtn").style.display = "inline-block";
+  render();
+}
+
+/* ---------- タブ ---------- */
+function setTab(t) {
+  tab = t;
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+  render();
+}
+function render() {
+  const pending = load(K.pending, []);
+  const clubs = NAVI.getClubs();
+  const allReviews = clubs.flatMap(c => (c.reviews || []).map(r => ({ ...r, clubName: c.name })));
+  const trials = load(K.trials, []);
+  document.getElementById("numPending").textContent = pending.length;
+  document.getElementById("numClubs").textContent = clubs.length;
+  document.getElementById("numReviews").textContent = allReviews.length;
+  document.getElementById("numTrials").textContent = trials.length;
+  const area = document.getElementById("panelArea");
+  if (tab === "pending") renderPending(area, pending);
+  else if (tab === "edit") renderEdit(area, clubs);
+  else if (tab === "reviews") renderReviews(area, allReviews);
+  else renderTrials(area, trials);
+}
+
+/* ---------- 承認フロー ---------- */
+function renderPending(area, pending) {
+  area.innerHTML = `<h2>📮 掲載申請の承認</h2>
+    <p class="note">サークル掲載申請を確認し、承認するとサイトに公開されます。</p>
+    ${pending.length === 0 ? `<div class="empty">現在、承認待ちの申請はありません。<br>トップページの「サークル登録」から申請するとここに表示されます。</div>` : ""}
+    ${pending.map((c, i) => `
+      <div class="item">
+        <div class="head">
+          <span style="font-size:20px;">${c.emoji}</span>
+          <span class="nm">${c.name}</span>
+          <span class="pill" style="color:${CAT_STYLE[c.cat].color}; background:${CAT_STYLE[c.cat].bg};">${c.cat}</span>
+          <span class="meta">📍 ${c.campus}　申請日時: ${c.appliedAt || "—"}</span>
+          <div class="actions">
+            <button class="btn btn-green" onclick="approve(${i})">✔ 承認して公開</button>
+            <button class="btn btn-danger" onclick="reject(${i})">✕ 却下</button>
+          </div>
+        </div>
+        <div class="body">
+          活動コマ: ${c.slots.map(s => DAYS[s.d] + "曜・" + PERIODS.find(p => p.id === s.p).label).join("、")}
+          ／ 連絡先: ${c.contactEmail || "—"}<br>
+          ${c.appeal || ""}
+        </div>
+      </div>`).join("")}`;
+}
+function approve(i) {
+  const pending = load(K.pending, []);
+  const club = pending.splice(i, 1)[0];
+  const approved = load(K.approved, []);
+  approved.push(club);
+  save(K.pending, pending);
+  save(K.approved, approved);
+  toast(`「${club.name}」を承認して公開しました`);
+  render();
+}
+function reject(i) {
+  const pending = load(K.pending, []);
+  const club = pending.splice(i, 1)[0];
+  save(K.pending, pending);
+  toast(`「${club.name}」の申請を却下しました`);
+  render();
+}
+
+/* ---------- サークル編集 ---------- */
+let editingId = null;
+function renderEdit(area, clubs) {
+  area.innerHTML = `<h2>✏️ 公開中サークルの編集</h2>
+    <p class="note">公開中のサークル情報を管理者が修正できます。変更は即座にサイトへ反映されます。</p>
+    ${clubs.map(c => `
+      <div class="item">
+        <div class="head">
+          <span style="font-size:20px;">${c.emoji}</span>
+          <span class="nm">${c.name}</span>
+          <span class="pill" style="color:${CAT_STYLE[c.cat].color}; background:${CAT_STYLE[c.cat].bg};">${c.cat}／${c.sub}</span>
+          <span class="meta">📍 ${c.campus}</span>
+          <div class="actions"><button class="btn btn-ghost" onclick="toggleEdit('${c.id}')">${editingId === c.id ? "閉じる" : "編集する"}</button></div>
+        </div>
+        ${editingId === c.id ? editForm(c) : ""}
+      </div>`).join("")}`;
+}
+function toggleEdit(id) {
+  editingId = editingId === id ? null : id;
+  render();
+}
+function editForm(c) {
+  const catOpts = Object.keys(CATEGORIES).map(x => `<option ${x === c.cat ? "selected" : ""}>${x}</option>`).join("");
+  const campusOpts = CAMPUSES.map(x => `<option ${x === c.campus ? "selected" : ""}>${x}</option>`).join("");
+  return `<div class="edit-box">
+    <div class="field"><label>サークル名</label><input id="eName" value="${esc(c.name)}"></div>
+    <div class="two-col">
+      <div class="field"><label>カテゴリ</label><select id="eCat">${catOpts}</select></div>
+      <div class="field"><label>細かいジャンル</label><input id="eSub" value="${esc(c.sub)}"></div>
+      <div class="field"><label>キャンパス</label><select id="eCampus">${campusOpts}</select></div>
+      <div class="field"><label>部員数</label><input id="eMembers" type="number" min="0" value="${c.members}"></div>
+      <div class="field"><label>入会金（円）</label><input id="eCostJoin" type="number" min="0" value="${c.costJoin}"></div>
+      <div class="field"><label>年会費（円）</label><input id="eCostYear" type="number" min="0" value="${c.costYear}"></div>
+    </div>
+    <div class="field"><label>一言アピール</label><input id="eAppeal" value="${esc(c.appeal)}"></div>
+    <div class="field"><label>紹介文</label><textarea id="eDesc">${esc(c.desc)}</textarea></div>
+    <div class="field"><label>YouTube動画URL</label><input id="eYoutube" value="${esc(c.youtube || "")}" placeholder="https://www.youtube.com/watch?v=..."></div>
+    <div class="field"><label>OB・OG進路（読点区切り）</label><input id="eObog" value="${esc((c.obog || []).join("、"))}"></div>
+    <button class="btn btn-red" onclick="saveEdit('${c.id}')">💾 変更を保存</button>
+    <button class="btn btn-ghost" onclick="resetEdit('${c.id}')" style="margin-left:8px;">上書きを取り消す</button>
+  </div>`;
+}
+function saveEdit(id) {
+  const edits = load(K.edits, {});
+  edits[id] = {
+    name: document.getElementById("eName").value.trim(),
+    cat: document.getElementById("eCat").value,
+    sub: document.getElementById("eSub").value.trim(),
+    campus: document.getElementById("eCampus").value,
+    members: Number(document.getElementById("eMembers").value) || 0,
+    costJoin: Number(document.getElementById("eCostJoin").value) || 0,
+    costYear: Number(document.getElementById("eCostYear").value) || 0,
+    appeal: document.getElementById("eAppeal").value.trim(),
+    desc: document.getElementById("eDesc").value.trim(),
+    youtube: document.getElementById("eYoutube").value.trim(),
+    obog: document.getElementById("eObog").value.split(/[、,]/).map(s => s.trim()).filter(Boolean),
+  };
+  save(K.edits, edits);
+  editingId = null;
+  toast("変更を保存しました（サイトに反映済み）");
+  render();
+}
+function resetEdit(id) {
+  const edits = load(K.edits, {});
+  delete edits[id];
+  save(K.edits, edits);
+  editingId = null;
+  toast("上書きを取り消し、元の内容に戻しました");
+  render();
+}
+
+/* ---------- レビュー管理 ---------- */
+function renderReviews(area, reviews) {
+  area.innerHTML = `<h2>💬 レビュー管理</h2>
+    <p class="note">不適切なクチコミを削除できます。削除すると即座にサイトから非表示になります。</p>
+    ${reviews.length === 0 ? `<div class="empty">表示中のレビューはありません。</div>` : ""}
+    ${reviews.map(r => `
+      <div class="item">
+        <div class="head">
+          <span class="nm" style="font-size:13px;">${r.clubName}</span>
+          <span class="meta">${r.author}</span>
+          <div class="actions"><button class="btn btn-danger" onclick="deleteReview('${r.id}')">🗑 削除する</button></div>
+        </div>
+        <div class="body">${r.text}</div>
+      </div>`).join("")}`;
+}
+function deleteReview(id) {
+  if (!confirm("このレビューを削除しますか？（サイトから非表示になります）")) return;
+  const deleted = load(K.deletedReviews, []);
+  if (!deleted.includes(id)) deleted.push(id);
+  save(K.deletedReviews, deleted);
+  toast("レビューを削除しました");
+  render();
+}
+
+/* ---------- 体験申し込み一覧 ---------- */
+function renderTrials(area, trials) {
+  area.innerHTML = `<h2>✉️ 体験申し込み一覧</h2>
+    <p class="note">サイトから送信された「体験申し込み（話を聞いてみる）」の一覧です。</p>
+    ${trials.length === 0 ? `<div class="empty">まだ申し込みはありません。</div>` : ""}
+    ${[...trials].reverse().map(t => `
+      <div class="item">
+        <div class="head">
+          <span class="nm" style="font-size:13.5px;">${t.clubName}</span>
+          <span class="meta">${t.at}</span>
+        </div>
+        <div class="body">👤 ${t.name}（${t.dept || "学部未記入"}）　📧 ${t.email}${t.msg ? `<br>💬 ${t.msg}` : ""}</div>
+      </div>`).join("")}`;
+}
+
+/* ---------- 共通 ---------- */
+function esc(s) { return String(s ?? "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;"); }
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.style.display = "block";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.style.display = "none", 2400);
+}
+if (sessionStorage.getItem(K.admin) === "1") showDashboard();
+</script>
+</body>
+</html>
