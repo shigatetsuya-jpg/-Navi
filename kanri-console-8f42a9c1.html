@@ -88,7 +88,7 @@
     <div class="login-error" id="loginError">パスワードが違います。</div>
     <input type="password" id="pwInput" placeholder="管理者パスワード" onkeydown="if(event.key==='Enter') login()">
     <button class="btn btn-red" style="width:100%; padding:11px;" onclick="login()">ログイン</button>
-    <div class="demo-hint">🧪 デモ版のパスワード：<b>admin2026</b><br>（本番運用時はSupabase Auth等での認証に置き換えます）</div>
+    <div class="demo-hint">🔒 このページは運営者専用です。パスワードは公開されていません。</div>
   </div>
 
   <!-- ダッシュボード -->
@@ -108,7 +108,7 @@
 <script src="data.js"></script>
 <script>
 const { DAYS, PERIODS, CAMPUSES, CATEGORIES, CAT_STYLE, K, load, save } = NAVI;
-const PW = "admin2026";
+const PW = "Shinkan0708";
 let tab = "pending";
 
 /* ---------- 認証（デモ） ---------- */
