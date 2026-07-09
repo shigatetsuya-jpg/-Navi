@@ -64,6 +64,7 @@
   .edit-box { background:#fbf7f3; border-radius:10px; padding:14px; margin-top:12px; }
   .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; border-radius:999px; padding:10px 20px; font-size:13px; z-index:200; display:none; }
 </style>
+<script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.26.0"></script>
 </head>
 <body>
 
@@ -108,20 +109,48 @@
 <script src="data.js"></script>
 <script>
 const { DAYS, PERIODS, CAMPUSES, CATEGORIES, CAT_STYLE, K, load, save } = NAVI;
-const PW = "Shinkan0708";
+let supabase = null;
 let tab = "pending";
 
-/* ---------- 認証（デモ） ---------- */
-function login() {
-  if (document.getElementById("pwInput").value !== PW) {
+// Supabase初期化
+(async () => {
+  if (window.supabase) {
+    const { createClient } = window.supabase;
+    supabase = createClient(
+      'https://guhguwgjazldcufmwzzi.supabase.co',
+      'sb_publishable_sN5BEO25vmByiN-5JpkIDQ_YDHccpg4'
+    );
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) showDashboard();
+  }
+})();
+
+/* ---------- 認証（Supabase） ---------- */
+async function login() {
+  const email = document.getElementById("pwInput").placeholder || "admin@navi.test";
+  const password = document.getElementById("pwInput").value;
+  if (!password) {
+    document.getElementById("loginError").textContent = "パスワードを入力してください";
     document.getElementById("loginError").style.display = "block";
     return;
   }
-  sessionStorage.setItem(K.admin, "1");
-  showDashboard();
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      document.getElementById("loginError").textContent = "ログインに失敗しました（メール・パスワードを確認）";
+      document.getElementById("loginError").style.display = "block";
+      return;
+    }
+    showDashboard();
+  } catch (e) {
+    document.getElementById("loginError").textContent = "エラーが発生しました";
+    document.getElementById("loginError").style.display = "block";
+  }
 }
-function logout() {
-  sessionStorage.removeItem(K.admin);
+async function logout() {
+  if (supabase) {
+    await supabase.auth.signOut();
+  }
   location.reload();
 }
 function showDashboard() {

@@ -1,8 +1,6 @@
 /* =========================================================
-   新歓ナビ — 共有データ & ストレージヘルパー
-   index.html / admin.html の両方から読み込まれます。
-   ブラウザだけで動くデモ版のため、追加・編集データは
-   localStorage に保存されます（デモモード）。
+   新歓ナビ — Supabase 連携版
+   index.html / kanri-console-8f42a9c1.html の両方から読み込まれます。
    ========================================================= */
 
 const NAVI = (() => {
@@ -295,17 +293,11 @@ const NAVI = (() => {
     },
   ];
 
-  /* ---------- localStorage keys ---------- */
+  /* localStorage keys (ブラウザローカル設定用) */
   const K = {
-    approved: "navi_approved_clubs",   // 管理者が承認した申請（クラブ配列）
-    pending: "navi_pending_clubs",     // 申請中のクラブ
-    edits: "navi_club_edits",          // { clubId: {上書きフィールド} }
-    deletedReviews: "navi_deleted_reviews", // [reviewId]
-    busy: "navi_busy_slots",           // ["d-p"] ✕（授業あり）のコマ。無ければ全部空きコマ
-    busyFilter: "navi_busy_filter_on", // "1" | ""
-    bookmarks: "navi_bookmarks",       // [clubId]
-    trials: "navi_trial_applications", // 体験申し込み
-    admin: "navi_admin_session",       // sessionStorage側
+    busy: "navi_busy_slots",           // ユーザーの時間割設定（ローカルのみ）
+    busyFilter: "navi_busy_filter_on",
+    bookmarks: "navi_bookmarks",
   };
 
   function load(key, fallback) {
@@ -318,17 +310,97 @@ const NAVI = (() => {
     localStorage.setItem(key, JSON.stringify(value));
   }
 
-  /* 公開中クラブ = シード + 承認済み、編集上書き・レビュー削除を反映 */
-  function getClubs() {
-    const approved = load(K.approved, []);
-    const edits = load(K.edits, {});
-    const deleted = new Set(load(K.deletedReviews, []));
-    return [...SEED_CLUBS, ...approved].map(club => {
-      const merged = { ...club, ...(edits[club.id] || {}) };
-      merged.reviews = (merged.reviews || []).filter(r => !deleted.has(r.id));
-      return merged;
-    });
+  let supabaseClient = null;
+
+  /* Supabaseクライアント初期化 */
+  async function initSupabase() {
+    if (window.supabase) {
+      const { createClient } = window.supabase;
+      supabaseClient = createClient(
+        'https://guhguwgjazldcufmwzzi.supabase.co',
+        'sb_publishable_sN5BEO25vmByiN-5JpkIDQ_YDHccpg4'
+      );
+      console.log('Supabase initialized');
+      await loadSeedToSupabase();
+    }
   }
 
-  return { DAYS, PERIODS, CAMPUSES, CATEGORIES, CAT_STYLE, SEED_CLUBS, K, load, save, getClubs };
+  /* テストデータをSupabaseにロード（初回のみ） */
+  async function loadSeedToSupabase() {
+    if (!supabaseClient) return;
+    const { data: existing } = await supabaseClient.from('clubs').select('count', { count: 'exact' });
+    if (existing && existing.length > 0) return; // 既にロードされている
+
+    for (const club of SEED_CLUBS) {
+      const slots = club.slots.map(s => `${s.d}-${s.p}`);
+      const { error } = await supabaseClient.from('clubs').insert({
+        name: club.name,
+        category: club.cat,
+        subcategory: club.sub,
+        campus: club.campus,
+        emoji: club.emoji,
+        appeal: club.appeal,
+        description: club.desc,
+        member_count: club.members,
+        costs: `入会: ${club.costJoin}円 / 年: ${club.costYear}円`,
+        slots: slots,
+        tags: club.tags,
+        youtube_url: club.youtube,
+        obog: club.obog,
+        is_demo: true,
+      });
+      if (error) console.error('Error loading seed club:', error);
+    }
+  }
+
+  /* Supabaseから公開クラブを取得 */
+  async function getClubsFromSupabase() {
+    if (!supabaseClient) {
+      console.warn('Supabase not initialized, returning seed clubs');
+      return SEED_CLUBS;
+    }
+    const { data: clubs, error } = await supabaseClient.from('clubs').select('*');
+    if (error) {
+      console.error('Error fetching clubs:', error);
+      return SEED_CLUBS;
+    }
+    return (clubs || []).map(c => ({
+      id: c.id || c.name.toLowerCase(),
+      name: c.name,
+      cat: c.category,
+      sub: c.subcategory,
+      campus: c.campus,
+      emoji: c.emoji,
+      appeal: c.appeal,
+      desc: c.description,
+      members: c.member_count,
+      costJoin: 0, costYear: 0,
+      slots: (c.slots || []).map(s => {
+        const [d, p] = s.split('-');
+        return { d: parseInt(d), p };
+      }),
+      tags: c.tags || [],
+      youtube: c.youtube_url,
+      obog: c.obog || [],
+      reviews: [],
+      official: true,
+    }));
+  }
+
+  /* 同期的getClubs（Demo用にSeedを返す） */
+  function getClubs() {
+    return SEED_CLUBS;
+  }
+
+  return {
+    DAYS, PERIODS, CAMPUSES, CATEGORIES, CAT_STYLE, SEED_CLUBS, K,
+    load, save, getClubs, getClubsFromSupabase, initSupabase
+  };
 })();
+
+// Supabase初期化
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => NAVI.initSupabase());
+} else {
+  NAVI.initSupabase();
+}
