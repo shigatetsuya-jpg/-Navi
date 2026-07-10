@@ -1,56 +1,55 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
 	pageEncoding="utf-8"%>
-<!DOCTYPE html>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="sql" uri="jakarta.tags.sql" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
+<fmt:requestEncoding value="utf-8" />
 <sql:setDataSource driver="org.h2.Driver" url="jdbc:h2:~/h2db/mydb" />
 
-<%
-  String sessionId = session.getId();
-  String action = request.getParameter("action");
+<c:set var="sessionId" value="${pageContext.session.id}" />
 
-  String setId = request.getParameter("setId");
-  String setName = request.getParameter("setName");
-  String price = request.getParameter("price");
-  String size = request.getParameter("size");
-  String quantity = request.getParameter("quantity");
+<%-- カート追加：在庫を確認してから追加。在庫が足りなければ在庫なし画面へ --%>
+<c:if test="${not empty param.setId and not empty param.size}">
+	<sql:query var="stockCheck">
+		SELECT COALESCE(STOCK_NUM, 0) AS STOCK_NUM FROM PRODUCT_SET_STOCK WHERE SET_ID = ?
+		<sql:param value="${param.setId}" />
+	</sql:query>
+	<c:choose>
+		<c:when test="${empty stockCheck.rows or stockCheck.rows[0].STOCK_NUM < param.quantity}">
+			<c:redirect url="outofstock.jsp" />
+		</c:when>
+		<c:otherwise>
+			<sql:update>
+				INSERT INTO SHOPPING_CART (SESSION_ID, PRODUCT_CODE, SET_NAME, PRODUCT_SIZE, PRICE, QUANTITY)
+				VALUES (?, ?, ?, ?, ?, ?)
+				<sql:param value="${sessionId}" />
+				<sql:param value="SET-${param.setId}" />
+				<sql:param value="${param.setName}" />
+				<sql:param value="${param.size}" />
+				<sql:param value="${param.price}" />
+				<sql:param value="${param.quantity}" />
+			</sql:update>
+		</c:otherwise>
+	</c:choose>
+</c:if>
 
-  if (setId != null && !setId.isEmpty() && size != null && !size.isEmpty()) {
-    String productCode = "SET-" + setId;
-%>
-    <sql:update>
-      INSERT INTO SHOPPING_CART (SESSION_ID, PRODUCT_CODE, SET_NAME, PRODUCT_SIZE, PRICE, QUANTITY)
-      VALUES (?, ?, ?, ?, ?, ?)
-      <sql:param value="<%= sessionId %>" />
-      <sql:param value="<%= productCode %>" />
-      <sql:param value="<%= setName %>" />
-      <sql:param value="<%= size %>" />
-      <sql:param value="<%= price %>" />
-      <sql:param value="<%= quantity %>" />
-    </sql:update>
-<%
-  } else if ("delete".equals(action)) {
-    String cartId = request.getParameter("cartId");
-    if (cartId != null && !cartId.isEmpty()) {
-%>
-      <sql:update>
-        DELETE FROM SHOPPING_CART WHERE CART_ID = ?
-        <sql:param value="<%= cartId %>" />
-      </sql:update>
-<%
-    }
-  }
-%>
+<%-- カートから削除 --%>
+<c:if test="${param.action == 'delete' and not empty param.cartId}">
+	<sql:update>
+		DELETE FROM SHOPPING_CART WHERE CART_ID = ?
+		<sql:param value="${param.cartId}" />
+	</sql:update>
+</c:if>
 
 <sql:query var="cartItems">
   SELECT CART_ID, PRODUCT_CODE, SET_NAME, PRODUCT_SIZE, PRICE, QUANTITY, (PRICE * QUANTITY) as SUBTOTAL
   FROM SHOPPING_CART
   WHERE SESSION_ID = ?
-  <sql:param value="<%= sessionId %>" />
+  <sql:param value="${sessionId}" />
 </sql:query>
 
+<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
