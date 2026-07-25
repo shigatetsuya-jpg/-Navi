@@ -127,7 +127,7 @@ let tab = "pending";
 
 /* ---------- 認証（Supabase） ---------- */
 async function login() {
-  const email = document.getElementById("pwInput").placeholder || "admin@navi.test";
+  const email = "shiga.tetsuya@akane.waseda.jp";
   const password = document.getElementById("pwInput").value;
   if (!password) {
     document.getElementById("loginError").textContent = "パスワードを入力してください";
@@ -137,14 +137,16 @@ async function login() {
   try {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      document.getElementById("loginError").textContent = "ログインに失敗しました（メール・パスワードを確認）";
+      document.getElementById("loginError").textContent = "ログインに失敗しました（パスワードを確認）";
       document.getElementById("loginError").style.display = "block";
+      console.error('Auth error:', error);
       return;
     }
     showDashboard();
   } catch (e) {
     document.getElementById("loginError").textContent = "エラーが発生しました";
     document.getElementById("loginError").style.display = "block";
+    console.error('Login error:', e);
   }
 }
 async function logout() {
