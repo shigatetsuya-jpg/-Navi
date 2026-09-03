@@ -211,20 +211,40 @@ function renderPending(area, pending) {
         </div>
       </div>`).join("")}`;
 }
-function approve(i) {
+async function approve(i) {
   const pending = load(K.pending, []);
   const club = pending.splice(i, 1)[0];
   const approved = load(K.approved, []);
   approved.push(club);
   save(K.pending, pending);
   save(K.approved, approved);
+
+  // Supabaseにも保存
+  if (typeof NAVI !== 'undefined' && NAVI.approvePendingClubInSupabase) {
+    try {
+      await NAVI.approvePendingClubInSupabase(club.id);
+    } catch (e) {
+      console.error('Failed to save to Supabase:', e);
+    }
+  }
+
   toast(`「${club.name}」を承認して公開しました`);
   render();
 }
-function reject(i) {
+async function reject(i) {
   const pending = load(K.pending, []);
   const club = pending.splice(i, 1)[0];
   save(K.pending, pending);
+
+  // Supabaseでも削除（status を却下に変更）
+  if (typeof NAVI !== 'undefined' && NAVI.approvePendingClubInSupabase) {
+    try {
+      // TODO: 却下ステータスの実装
+    } catch (e) {
+      console.error('Failed to save to Supabase:', e);
+    }
+  }
+
   toast(`「${club.name}」の申請を却下しました`);
   render();
 }
@@ -271,9 +291,9 @@ function editForm(c) {
     <button class="btn btn-ghost" onclick="resetEdit('${c.id}')" style="margin-left:8px;">上書きを取り消す</button>
   </div>`;
 }
-function saveEdit(id) {
+async function saveEdit(id) {
   const edits = load(K.edits, {});
-  edits[id] = {
+  const newEdit = {
     name: document.getElementById("eName").value.trim(),
     cat: document.getElementById("eCat").value,
     sub: document.getElementById("eSub").value.trim(),
@@ -286,7 +306,30 @@ function saveEdit(id) {
     youtube: document.getElementById("eYoutube").value.trim(),
     obog: document.getElementById("eObog").value.split(/[、,]/).map(s => s.trim()).filter(Boolean),
   };
+  edits[id] = newEdit;
   save(K.edits, edits);
+
+  // Supabaseにも各フィールドの編集を記録
+  if (typeof NAVI !== 'undefined' && NAVI.saveClubEditToSupabase) {
+    const club = adminClubs.find(c => c.id === id);
+    if (club) {
+      try {
+        // 主要フィールドの変更を記録
+        if (club.name !== newEdit.name) {
+          await NAVI.saveClubEditToSupabase(id, 'name', club.name, newEdit.name);
+        }
+        if (club.appeal !== newEdit.appeal) {
+          await NAVI.saveClubEditToSupabase(id, 'appeal', club.appeal, newEdit.appeal);
+        }
+        if (club.desc !== newEdit.desc) {
+          await NAVI.saveClubEditToSupabase(id, 'description', club.desc, newEdit.desc);
+        }
+      } catch (e) {
+        console.error('Failed to save edit to Supabase:', e);
+      }
+    }
+  }
+
   editingId = null;
   toast("変更を保存しました（サイトに反映済み）");
   render();
@@ -315,11 +358,21 @@ function renderReviews(area, reviews) {
         <div class="body">${r.text}</div>
       </div>`).join("")}`;
 }
-function deleteReview(id) {
+async function deleteReview(id) {
   if (!confirm("このレビューを削除しますか？（サイトから非表示になります）")) return;
   const deleted = load(K.deletedReviews, []);
   if (!deleted.includes(id)) deleted.push(id);
   save(K.deletedReviews, deleted);
+
+  // Supabaseでもsoft deleteを実行
+  if (typeof NAVI !== 'undefined' && NAVI.deleteReviewInSupabase) {
+    try {
+      await NAVI.deleteReviewInSupabase(id);
+    } catch (e) {
+      console.error('Failed to delete review in Supabase:', e);
+    }
+  }
+
   toast("レビューを削除しました");
   render();
 }

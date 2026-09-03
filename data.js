@@ -298,6 +298,11 @@ const NAVI = (() => {
     busy: "navi_busy_slots",           // ユーザーの時間割設定（ローカルのみ）
     busyFilter: "navi_busy_filter_on",
     bookmarks: "navi_bookmarks",
+    pending: "navi_pending_clubs",     // 管理者: 申請待ちクラブ
+    approved: "navi_approved_clubs",   // 管理者: 承認済みクラブ
+    edits: "navi_club_edits",          // 管理者: クラブ編集内容
+    deletedReviews: "navi_deleted_reviews", // 管理者: 削除済みレビュー
+    trials: "navi_trials",             // 管理者: 体験応募
   };
 
   function load(key, fallback) {
@@ -392,9 +397,81 @@ const NAVI = (() => {
     return SEED_CLUBS;
   }
 
+  /* Supabaseにクラブ申請を保存 */
+  async function savePendingClubToSupabase(club) {
+    if (!supabaseClient) return;
+    const { error } = await supabaseClient.from('club_applications').insert({
+      name: club.name,
+      category: club.cat,
+      subcategory: club.sub,
+      campus: club.campus,
+      email: club.email || '',
+      appeal: club.appeal,
+      description: club.desc,
+      member_count: club.members,
+      costs: `入会: ${club.costJoin}円 / 年: ${club.costYear}円`,
+      slots: club.slots.map(s => `${s.d}-${s.p}`),
+      youtube_url: club.youtube || '',
+      status: 'pending',
+    });
+    if (error) console.error('Error saving pending club:', error);
+  }
+
+  /* Supabaseでクラブ申請を承認 */
+  async function approvePendingClubInSupabase(clubId) {
+    if (!supabaseClient) return;
+    const { error } = await supabaseClient
+      .from('club_applications')
+      .update({ status: 'approved' })
+      .eq('id', clubId);
+    if (error) console.error('Error approving club:', error);
+  }
+
+  /* Supabaseにクラブ編集を記録 */
+  async function saveClubEditToSupabase(clubId, fieldName, oldValue, newValue) {
+    if (!supabaseClient) return;
+    const { error } = await supabaseClient.from('club_edits').insert({
+      club_id: clubId,
+      field_name: fieldName,
+      old_value: oldValue,
+      new_value: newValue,
+      edited_at: new Date().toISOString(),
+    });
+    if (error) console.error('Error saving club edit:', error);
+  }
+
+  /* Supabaseでレビューを削除（soft delete） */
+  async function deleteReviewInSupabase(reviewId) {
+    if (!supabaseClient) return;
+    const { error } = await supabaseClient
+      .from('reviews')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', reviewId);
+    if (error) console.error('Error deleting review:', error);
+  }
+
+  /* Supabaseから体験応募を取得 */
+  async function getTrialsFromSupabase() {
+    if (!supabaseClient) {
+      console.warn('Supabase not initialized, returning empty trials');
+      return [];
+    }
+    const { data: trials, error } = await supabaseClient
+      .from('trial_applications')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) {
+      console.error('Error fetching trials:', error);
+      return [];
+    }
+    return trials || [];
+  }
+
   return {
     DAYS, PERIODS, CAMPUSES, CATEGORIES, CAT_STYLE, SEED_CLUBS, K,
-    load, save, getClubs, getClubsFromSupabase, initSupabase
+    load, save, getClubs, getClubsFromSupabase, initSupabase,
+    savePendingClubToSupabase, approvePendingClubInSupabase,
+    saveClubEditToSupabase, deleteReviewInSupabase, getTrialsFromSupabase
   };
 })();
 
