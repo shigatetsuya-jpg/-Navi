@@ -113,6 +113,7 @@ let { DAYS, PERIODS, CAMPUSES, CATEGORIES, CAT_STYLE, K, load, save } = {};
 let tab = "pending";
 const PW = "Shinkan0708";
 const ADMIN_KEY = "navi_admin_session";
+let adminClubs = [];
 
 // NAVIの読み込みを待つ
 function waitForNAVI() {
@@ -143,7 +144,7 @@ function logout() {
   sessionStorage.removeItem(ADMIN_KEY);
   location.reload();
 }
-function showDashboard() {
+async function showDashboard() {
   if (!NAVI_loaded || !K.pending) {
     console.warn('NAVI not fully loaded, retrying...');
     setTimeout(showDashboard, 50);
@@ -152,6 +153,15 @@ function showDashboard() {
   document.getElementById("loginBox").style.display = "none";
   document.getElementById("dashboard").style.display = "block";
   document.getElementById("logoutBtn").style.display = "inline-block";
+
+  // Load clubs from Supabase
+  try {
+    adminClubs = await NAVI.getClubsFromSupabase();
+  } catch (e) {
+    console.error('Failed to load clubs from Supabase:', e);
+    adminClubs = NAVI.getClubs();
+  }
+
   render();
 }
 
@@ -163,7 +173,7 @@ function setTab(t) {
 }
 function render() {
   const pending = load(K.pending, []);
-  const clubs = NAVI.getClubs();
+  const clubs = adminClubs.length > 0 ? adminClubs : NAVI.getClubs();
   const allReviews = clubs.flatMap(c => (c.reviews || []).map(r => ({ ...r, clubName: c.name })));
   const trials = load(K.trials, []);
   document.getElementById("numPending").textContent = pending.length;

@@ -405,6 +405,18 @@ const state = {
 let clubs = NAVI.getClubs();
 const bookmarks = new Set(load(K.bookmarks, []));
 
+/* ================= Supabase 初期化 ================= */
+async function initializeClubData() {
+  try {
+    const supabaseClubs = await NAVI.getClubsFromSupabase();
+    clubs = supabaseClubs;
+    render();
+  } catch (e) {
+    console.error('Failed to load clubs from Supabase:', e);
+    // SEED_CLUBSのままで続行
+  }
+}
+
 /* ================= ヒーロー検索UI ================= */
 function buildChips(containerId, items, selected, onToggle) {
   const box = document.getElementById(containerId);
@@ -859,7 +871,7 @@ document.addEventListener("keydown", e => {
 
 initHero();
 renderMyTT();
-render();
+initializeClubData();
 </script>
 </body>
 </html>
