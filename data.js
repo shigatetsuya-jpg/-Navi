@@ -398,9 +398,16 @@ const NAVI = (() => {
   };
 })();
 
-// Supabase初期化
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => NAVI.initSupabase());
-} else {
-  NAVI.initSupabase();
-}
+// Supabase初期化（エラーは無視して続行）
+(async () => {
+  try {
+    if (document.readyState === 'loading') {
+      await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
+    }
+    if (typeof NAVI !== 'undefined' && NAVI.initSupabase) {
+      await NAVI.initSupabase();
+    }
+  } catch (e) {
+    console.warn('Supabase initialization failed, continuing without it:', e);
+  }
+})();
