@@ -108,7 +108,21 @@
 
 <script src="data.js"></script>
 <script>
-const { DAYS, PERIODS, CAMPUSES, CATEGORIES, CAT_STYLE, K, load, save } = NAVI;
+let NAVI_loaded = false;
+let { DAYS, PERIODS, CAMPUSES, CATEGORIES, CAT_STYLE, K, load, save } = {};
+
+// NAVIの読み込みを待つ
+function waitForNAVI() {
+  if (typeof NAVI !== 'undefined' && NAVI.K) {
+    NAVI_loaded = true;
+    ({ DAYS, PERIODS, CAMPUSES, CATEGORIES, CAT_STYLE, K, load, save } = NAVI);
+    console.log('NAVI loaded successfully');
+  } else {
+    setTimeout(waitForNAVI, 100);
+  }
+}
+waitForNAVI();
+
 let tab = "pending";
 const PW = "Shinkan0708";
 
