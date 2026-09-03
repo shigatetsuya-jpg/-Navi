@@ -113,20 +113,39 @@ let supabase = null;
 let tab = "pending";
 
 // Supabase初期化
-(async () => {
-  if (window.supabase) {
-    const { createClient } = window.supabase;
-    supabase = createClient(
-      'https://guhguwgjazldcufmwzzi.supabase.co',
-      'sb_publishable_sN5BEO25vmByiN-5JpkIDQ_YDHccpg4'
-    );
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) showDashboard();
+async function initSupabase() {
+  if (!window.supabase) {
+    console.error('Supabase SDK not loaded');
+    return;
   }
-})();
+  const { createClient } = window.supabase;
+  supabase = createClient(
+    'https://guhguwgjazldcufmwzzi.supabase.co',
+    'sb_publishable_sN5BEO25vmByiN-5JpkIDQ_YDHccpg4'
+  );
+  console.log('Supabase initialized');
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    console.log('User already logged in:', user.email);
+    showDashboard();
+  }
+}
+
+// DOMContentLoaded または即座に初期化
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initSupabase);
+} else {
+  initSupabase();
+}
 
 /* ---------- 認証（Supabase） ---------- */
 async function login() {
+  if (!supabase) {
+    document.getElementById("loginError").textContent = "システム初期化中です。もう一度試してください。";
+    document.getElementById("loginError").style.display = "block";
+    console.error('Supabase not initialized');
+    return;
+  }
   const email = "shiga.tetsuya@akane.waseda.jp";
   const password = document.getElementById("pwInput").value;
   if (!password) {
@@ -135,18 +154,20 @@ async function login() {
     return;
   }
   try {
+    console.log('Attempting login with:', email);
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      document.getElementById("loginError").textContent = "ログインに失敗しました（パスワードを確認）";
+      document.getElementById("loginError").textContent = `ログイン失敗: ${error.message}`;
       document.getElementById("loginError").style.display = "block";
       console.error('Auth error:', error);
       return;
     }
+    console.log('Login successful:', data);
     showDashboard();
   } catch (e) {
-    document.getElementById("loginError").textContent = "エラーが発生しました";
+    document.getElementById("loginError").textContent = `エラー: ${e.message}`;
     document.getElementById("loginError").style.display = "block";
-    console.error('Login error:', e);
+    console.error('Login exception:', e);
   }
 }
 async function logout() {
