@@ -72,8 +72,9 @@
   <div class="header-in">
     <span class="logo-mark">新</span>
     <h1>新歓ナビ 管理者ダッシュボード</h1>
-    <span class="badge">デモモード（ブラウザ内保存）</span>
+    <span class="badge">本番モード（Supabase認証）</span>
     <div class="right">
+      <span id="userEmail" style="font-size:12px; color:#5c554e; margin-right:12px;"></span>
       <a href="index.html">← サイトに戻る</a>
       <button class="btn btn-ghost" id="logoutBtn" style="display:none;" onclick="logout()">ログアウト</button>
     </div>
@@ -85,11 +86,12 @@
   <div class="login-box" id="loginBox">
     <div style="font-size:34px;">🔑</div>
     <h2>管理者ログイン</h2>
-    <p class="note">サークル掲載の承認・編集・レビュー管理を行います。</p>
-    <div class="login-error" id="loginError">パスワードが違います。</div>
-    <input type="password" id="pwInput" placeholder="管理者パスワード" onkeydown="if(event.key==='Enter') login()">
-    <button class="btn btn-red" style="width:100%; padding:11px;" onclick="login()">ログイン</button>
-    <div class="demo-hint">🔒 このページは運営者専用です。パスワードは公開されていません。</div>
+    <p class="note">Supabase で認証されたアカウントのみがアクセスできます。</p>
+    <div class="login-error" id="loginError"></div>
+    <input type="email" id="emailInput" placeholder="メールアドレス" onkeydown="if(event.key==='Enter') login()">
+    <input type="password" id="pwInput" placeholder="パスワード" onkeydown="if(event.key==='Enter') login()">
+    <button class="btn btn-red" id="loginBtn" style="width:100%; padding:11px;" onclick="login()">ログイン</button>
+    <div class="demo-hint">🔒 Supabase認証により、パスワードはサーバー側で安全に保管されます。</div>
   </div>
 
   <!-- ダッシュボード -->
@@ -111,9 +113,8 @@
 let NAVI_loaded = false;
 let { DAYS, PERIODS, CAMPUSES, CATEGORIES, CAT_STYLE, K, load, save } = {};
 let tab = "pending";
-const PW = "Shinkan0708";
-const ADMIN_KEY = "navi_admin_session";
 let adminClubs = [];
+let currentSession = null;
 
 // NAVIの読み込みを待つ
 function waitForNAVI() {
@@ -121,48 +122,119 @@ function waitForNAVI() {
     ({ DAYS, PERIODS, CAMPUSES, CATEGORIES, CAT_STYLE, K, load, save } = NAVI);
     NAVI_loaded = true;
     console.log('NAVI loaded successfully');
-    // ログイン状態をチェック
-    if (sessionStorage.getItem(ADMIN_KEY) === "1") {
-      setTimeout(showDashboard, 50);
-    }
+    checkExistingSession();
   } else {
     setTimeout(waitForNAVI, 100);
   }
 }
 waitForNAVI();
 
-/* ---------- 認証（シンプルパスワード） ---------- */
-function login() {
-  if (document.getElementById("pwInput").value !== PW) {
-    document.getElementById("loginError").style.display = "block";
+/* ---------- 認証（Supabase Auth） ---------- */
+async function checkExistingSession() {
+  if (!NAVI_loaded || !NAVI.getCurrentSession) return;
+  try {
+    const session = await NAVI.getCurrentSession();
+    if (session) {
+      currentSession = session;
+      const isAdmin = await NAVI.isUserAdmin();
+      if (isAdmin) {
+        setTimeout(showDashboard, 50);
+      } else {
+        showError("このアカウントは管理者権限がありません");
+        await NAVI.adminLogout();
+      }
+    }
+  } catch (e) {
+    console.error('Session check error:', e);
+  }
+}
+
+async function login() {
+  const email = document.getElementById("emailInput").value.trim();
+  const password = document.getElementById("pwInput").value;
+
+  if (!email || !password) {
+    showLoginError("メールアドレスとパスワードを入力してください");
     return;
   }
-  sessionStorage.setItem(ADMIN_KEY, "1");
-  showDashboard();
+
+  document.getElementById("loginBtn").disabled = true;
+  document.getElementById("loginBtn").textContent = "ログイン中...";
+
+  try {
+    const data = await NAVI.adminLogin(email, password);
+    currentSession = data.session;
+
+    // 管理者権限を確認
+    const isAdmin = await NAVI.isUserAdmin();
+    if (!isAdmin) {
+      showLoginError("このアカウントは管理者権限がありません");
+      await NAVI.adminLogout();
+      return;
+    }
+
+    showDashboard();
+  } catch (e) {
+    showLoginError(e.message || "ログインに失敗しました");
+  } finally {
+    document.getElementById("loginBtn").disabled = false;
+    document.getElementById("loginBtn").textContent = "ログイン";
+  }
 }
-function logout() {
-  sessionStorage.removeItem(ADMIN_KEY);
+
+async function logout() {
+  try {
+    await NAVI.adminLogout();
+  } catch (e) {
+    console.error('Logout error:', e);
+  }
   location.reload();
 }
+
+function showLoginError(msg) {
+  const err = document.getElementById("loginError");
+  if (err) {
+    err.textContent = msg;
+    err.style.display = "block";
+  }
+}
+
+function showError(msg) {
+  alert(msg);
+}
 async function showDashboard() {
-  if (!NAVI_loaded || !K.pending) {
+  if (!NAVI_loaded || !K) {
     console.warn('NAVI not fully loaded, retrying...');
     setTimeout(showDashboard, 50);
     return;
   }
-  document.getElementById("loginBox").style.display = "none";
-  document.getElementById("dashboard").style.display = "block";
-  document.getElementById("logoutBtn").style.display = "inline-block";
 
-  // Load clubs from Supabase
   try {
-    adminClubs = await NAVI.getClubsFromSupabase();
-  } catch (e) {
-    console.error('Failed to load clubs from Supabase:', e);
-    adminClubs = NAVI.getClubs();
-  }
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
+    document.getElementById("logoutBtn").style.display = "inline-block";
 
-  render();
+    // ユーザー情報を表示
+    if (currentSession?.user?.email) {
+      const userInfo = document.getElementById("userEmail");
+      if (userInfo) {
+        userInfo.textContent = `ログイン: ${currentSession.user.email}`;
+      }
+    }
+
+    // Load clubs from Supabase
+    try {
+      adminClubs = await NAVI.getClubsFromSupabase();
+    } catch (e) {
+      console.error('Failed to load clubs from Supabase:', e);
+      adminClubs = NAVI.getClubs();
+    }
+
+    render();
+  } catch (e) {
+    console.error('Dashboard error:', e);
+    showError('ダッシュボード読み込みエラー: ' + e.message);
+  }
 }
 
 /* ---------- タブ ---------- */

@@ -467,11 +467,60 @@ const NAVI = (() => {
     return trials || [];
   }
 
+  /* 管理者ログイン（Supabase Auth使用） */
+  async function adminLogin(email, password) {
+    if (!supabaseClient) {
+      throw new Error('Supabase not initialized');
+    }
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
+    if (error) {
+      throw new Error(error.message);
+    }
+    return data;
+  }
+
+  /* 管理者ログアウト */
+  async function adminLogout() {
+    if (!supabaseClient) return;
+    await supabaseClient.auth.signOut();
+  }
+
+  /* 現在のセッション確認 */
+  async function getCurrentSession() {
+    if (!supabaseClient) return null;
+    const { data: { session }, error } = await supabaseClient.auth.getSession();
+    if (error) console.error('Error getting session:', error);
+    return session;
+  }
+
+  /* ユーザーが管理者かどうか確認 */
+  async function isUserAdmin() {
+    if (!supabaseClient) return false;
+    const session = await getCurrentSession();
+    if (!session) return false;
+
+    const { data, error } = await supabaseClient
+      .from('admin_users')
+      .select('is_admin')
+      .eq('id', session.user.id)
+      .single();
+
+    if (error) {
+      console.error('Error checking admin status:', error);
+      return false;
+    }
+    return data?.is_admin || false;
+  }
+
   return {
     DAYS, PERIODS, CAMPUSES, CATEGORIES, CAT_STYLE, SEED_CLUBS, K,
     load, save, getClubs, getClubsFromSupabase, initSupabase,
     savePendingClubToSupabase, approvePendingClubInSupabase,
-    saveClubEditToSupabase, deleteReviewInSupabase, getTrialsFromSupabase
+    saveClubEditToSupabase, deleteReviewInSupabase, getTrialsFromSupabase,
+    adminLogin, adminLogout, getCurrentSession, isUserAdmin
   };
 })();
 
