@@ -108,23 +108,25 @@
 
 <script src="data.js"></script>
 <script>
-let NAVI_loaded = false;
 let { DAYS, PERIODS, CAMPUSES, CATEGORIES, CAT_STYLE, K, load, save } = {};
+let tab = "pending";
+const PW = "Shinkan0708";
+const ADMIN_KEY = "navi_admin_session";
 
 // NAVIの読み込みを待つ
 function waitForNAVI() {
   if (typeof NAVI !== 'undefined' && NAVI.K) {
-    NAVI_loaded = true;
     ({ DAYS, PERIODS, CAMPUSES, CATEGORIES, CAT_STYLE, K, load, save } = NAVI);
     console.log('NAVI loaded successfully');
+    // ログイン状態をチェック
+    if (sessionStorage.getItem(ADMIN_KEY) === "1") {
+      setTimeout(showDashboard, 50);
+    }
   } else {
     setTimeout(waitForNAVI, 100);
   }
 }
 waitForNAVI();
-
-let tab = "pending";
-const PW = "Shinkan0708";
 
 /* ---------- 認証（シンプルパスワード） ---------- */
 function login() {
@@ -132,19 +134,12 @@ function login() {
     document.getElementById("loginError").style.display = "block";
     return;
   }
-  sessionStorage.setItem(K.admin, "1");
+  sessionStorage.setItem(ADMIN_KEY, "1");
   showDashboard();
 }
 function logout() {
-  sessionStorage.removeItem(K.admin);
+  sessionStorage.removeItem(ADMIN_KEY);
   location.reload();
-}
-
-// ページ読み込み時にチェック
-if (sessionStorage.getItem(K.admin) === "1") {
-  document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(showDashboard, 100);
-  });
 }
 function showDashboard() {
   document.getElementById("loginBox").style.display = "none";
