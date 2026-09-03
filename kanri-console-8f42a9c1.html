@@ -108,6 +108,7 @@
 
 <script src="data.js"></script>
 <script>
+let NAVI_loaded = false;
 let { DAYS, PERIODS, CAMPUSES, CATEGORIES, CAT_STYLE, K, load, save } = {};
 let tab = "pending";
 const PW = "Shinkan0708";
@@ -117,6 +118,7 @@ const ADMIN_KEY = "navi_admin_session";
 function waitForNAVI() {
   if (typeof NAVI !== 'undefined' && NAVI.K) {
     ({ DAYS, PERIODS, CAMPUSES, CATEGORIES, CAT_STYLE, K, load, save } = NAVI);
+    NAVI_loaded = true;
     console.log('NAVI loaded successfully');
     // ログイン状態をチェック
     if (sessionStorage.getItem(ADMIN_KEY) === "1") {
@@ -142,6 +144,11 @@ function logout() {
   location.reload();
 }
 function showDashboard() {
+  if (!NAVI_loaded || !K.pending) {
+    console.warn('NAVI not fully loaded, retrying...');
+    setTimeout(showDashboard, 50);
+    return;
+  }
   document.getElementById("loginBox").style.display = "none";
   document.getElementById("dashboard").style.display = "block";
   document.getElementById("logoutBtn").style.display = "inline-block";
