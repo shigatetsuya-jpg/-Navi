@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>めぐりナビ 日光</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@600;900&display=swap">
+<style>
+  /* Layout: 左に条件フォーム、右に時刻表のような行程。杉並木の深緑を地に、神橋の朱をアクセントに */
+  :root {
+    --paper: #f4f4ee;
+    --card: #ffffff;
+    --soft: #e9ece3;
+    --ink: #1e2a23;
+    --muted: #646e66;
+    --line: #d8dbd0;
+    --cedar: #2e4b3b;
+    --band: #22382b;
+    --band-ink: #f1efe4;
+    --band-accent: #ff8f73;
+    --shu: #c2412a;
+    --shu-soft: #f7e3dc;
+    --gold: #a77f22;
+    --ok: #2f7a4b;
+    --warn: #b0561b;
+    --font-display: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    --font-body: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+    --radius: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #121714; --card: #192019; --soft: #212a23; --ink: #e5e8df; --muted: #9ba49b;
+      --line: #2d372f; --cedar: #93bba0; --band: #18231c; --band-ink: #e9e7dc;
+      --shu: #ee7d61; --shu-soft: #3a211a; --gold: #d8b45a; --ok: #7cc496; --warn: #eb9a5c;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #121714; --card: #192019; --soft: #212a23; --ink: #e5e8df; --muted: #9ba49b;
+    --line: #2d372f; --cedar: #93bba0; --band: #18231c; --band-ink: #e9e7dc;
+    --shu: #ee7d61; --shu-soft: #3a211a; --gold: #d8b45a; --ok: #7cc496; --warn: #eb9a5c;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.65; }
+  button, input, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--shu); outline-offset: 2px; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* ---------- 見出し帯 ---------- */
+  .band { background: var(--band); color: var(--band-ink); }
+  .band-in, .wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .band-in { padding-block: 26px 22px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; }
+  .brand { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .brand h1 { margin: 0; font-family: var(--font-display); font-weight: 900; font-size: clamp(28px, 5vw, 40px); letter-spacing: .04em; line-height: 1.2; }
+  .brand h1 span { color: var(--shu); }
+  .band .shu { color: var(--band-accent); }
+  .brand p { margin: 0; font-size: 14px; opacity: .85; }
+  .dest { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .dest select { background: transparent; border: 1px solid rgba(241,239,228,.4); color: var(--band-ink); border-radius: 6px; padding: 5px 8px; }
+  .dest select option { color: #1e2a23; }
+
+  .wrap { padding-block: 24px 48px; }
+  .layout { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 28px; align-items: start; }
+  @media (max-width: 900px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+
+  /* ---------- 条件フォーム ---------- */
+  .form { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: grid; gap: 18px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); }
+  @media (max-width: 900px) { .form { position: static; } }
+  .field { display: grid; gap: 7px; }
+  .label { font-size: 12px; font-weight: 700; letter-spacing: .08em; color: var(--muted); }
+  .styles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .style-opt { text-align: left; background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; cursor: pointer; display: grid; gap: 2px; }
+  .style-opt b { font-size: 14px; }
+  .style-opt small { font-size: 11px; color: var(--muted); line-height: 1.4; }
+  .style-opt[aria-pressed="true"] { border-color: var(--shu); background: var(--shu-soft); box-shadow: inset 0 0 0 1px var(--shu); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .seg { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg button { flex: 1; border: 0; background: var(--paper); padding: 7px 4px; font-size: 13px; cursor: pointer; }
+  .seg button + button { border-left: 1px solid var(--line); }
+  .seg button[aria-pressed="true"] { background: var(--cedar); color: var(--paper); font-weight: 700; }
+  input[type=number], input[type=time], select.in { width: 100%; background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; font-size: 14px; }
+  .yen { position: relative; }
+  .yen input { padding-right: 34px; }
+  .yen::after { content: "円"; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--muted); }
+  .presets { display: flex; gap: 6px; flex-wrap: wrap; }
+  .presets button { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 2px 10px; font-size: 12px; cursor: pointer; }
+  .check { display: flex; gap: 8px; align-items: center; font-size: 14px; cursor: pointer; }
+  details.must summary { cursor: pointer; font-size: 13px; font-weight: 700; color: var(--cedar); }
+  .must-list { display: grid; gap: 10px; margin-top: 10px; }
+  .must-area { font-size: 11px; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .chip { border: 1px solid var(--line); background: var(--paper); border-radius: 999px; padding: 2px 10px; font-size: 12px; cursor: pointer; }
+  .chip[aria-pressed="true"] { background: var(--shu); border-color: var(--shu); color: var(--card); font-weight: 700; }
+  .chip:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ---------- 結果 ---------- */
+  .results { display: grid; gap: 22px; min-width: 0; }
+  .alerts { display: grid; gap: 8px; }
+  .alert { border-left: 3px solid var(--warn); background: var(--card); padding: 9px 12px; font-size: 13px; border-radius: 0 8px 8px 0; }
+  .alert.info { border-left-color: var(--cedar); }
+
+  .summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  @media (max-width: 640px) { .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .stat { background: var(--card); padding: 14px 16px; display: grid; gap: 2px; align-content: start; }
+  .stat .k { font-size: 11px; font-weight: 700; letter-spacing: .08em; color: var(--muted); }
+  .stat .v { font-family: var(--font-display); font-weight: 900; font-size: 26px; line-height: 1.25; }
+  .stat .v small { font-family: var(--font-body); font-size: 13px; font-weight: 500; margin-left: 2px; }
+  .stat .s { font-size: 12px; color: var(--muted); }
+  .meter { height: 6px; background: var(--soft); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+  .meter i { display: block; height: 100%; background: var(--ok); border-radius: 3px; }
+  .meter.over i { background: var(--warn); }
+
+  .section-h { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 0 0 10px; }
+  .section-h h2 { margin: 0; font-family: var(--font-display); font-size: 21px; font-weight: 900; letter-spacing: .03em; text-wrap: balance; }
+  .section-h p { margin: 0; font-size: 12px; color: var(--muted); }
+
+  /* きっぷ（切符風のカード） */
+  .tickets { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .ticket { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px 14px 22px; display: grid; gap: 4px; min-width: 0; }
+  .ticket::before { content: ""; position: absolute; left: 10px; top: 10px; bottom: 10px; border-left: 2px dashed var(--line); }
+  .ticket .t-k { font-size: 11px; font-weight: 700; letter-spacing: .08em; color: var(--shu); }
+  .ticket .t-n { font-weight: 700; font-size: 15px; }
+  .ticket .t-d { font-size: 12px; color: var(--muted); }
+  .ticket .t-p { font-size: 13px; }
+
+  /* 行程（時刻表） */
+  .day { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .day + .day { margin-top: 14px; }
+  .day-h { background: var(--soft); padding: 9px 16px; font-weight: 700; font-size: 14px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .day-h span { font-weight: 500; color: var(--muted); font-size: 12px; }
+  .tl { list-style: none; margin: 0; padding: 8px 0; }
+  .tl li { display: grid; grid-template-columns: 64px 18px minmax(0, 1fr); column-gap: 10px; padding: 0 16px; }
+  .tl .time { text-align: right; font-weight: 700; font-size: 14px; padding-top: 9px; }
+  .tl .rail { position: relative; }
+  .tl .rail::before { content: ""; position: absolute; left: 8px; top: 0; bottom: 0; border-left: 2px solid var(--line); }
+  .tl li:first-child .rail::before { top: 16px; }
+  .tl li:last-child .rail::before { bottom: calc(100% - 16px); }
+  .tl .dot { position: absolute; left: 3px; top: 13px; width: 12px; height: 12px; border-radius: 50%; background: var(--card); border: 2px solid var(--cedar); }
+  .tl .body { padding: 7px 0 9px; min-width: 0; }
+  .tl li.spot .dot { background: var(--shu); border-color: var(--shu); }
+  .tl li.lunch .dot { border-color: var(--gold); background: var(--gold); }
+  .tl li.mv .time { font-weight: 400; color: var(--muted); font-size: 12px; padding-top: 4px; }
+  .tl li.mv .rail::before { border-left-style: dashed; }
+  .tl li.mv .dot { display: none; }
+  .tl li.mv .body { padding: 3px 0 4px; font-size: 12px; color: var(--muted); }
+  .sp-top { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .sp-name { font-weight: 700; font-size: 16px; }
+  .tag { font-size: 11px; border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; color: var(--muted); }
+  .tag.must { border-color: var(--shu); color: var(--shu); }
+  .sp-note { font-size: 13px; color: var(--muted); margin: 2px 0 0; }
+  .sp-meta { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; margin-top: 4px; align-items: center; }
+  .sp-meta .rm { margin-left: auto; border: 0; background: none; color: var(--muted); font-size: 12px; cursor: pointer; text-decoration: underline; padding: 0; }
+  .sp-meta .rm:hover { color: var(--shu); }
+
+  /* 費用 */
+  .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; }
+  @media (max-width: 760px) { .two { grid-template-columns: minmax(0, 1fr); } }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 7px 4px; border-bottom: 1px solid var(--line); text-align: left; }
+  td.r, th.r { text-align: right; }
+  tfoot td { font-weight: 700; border-bottom: 0; }
+  .bar { height: 6px; border-radius: 3px; background: var(--cedar); opacity: .7; }
+  .scroll { overflow-x: auto; }
+  .cmp tr.on td { background: var(--shu-soft); }
+  .cmp button { border: 0; background: none; padding: 0; color: var(--shu); font-weight: 700; cursor: pointer; text-decoration: underline; }
+  .removed { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; }
+  .foot { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  @media (prefers-reduced-motion: no-preference) { .meter i { transition: width .3s; } }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-in">
+    <div class="brand">
+      <h1>めぐり<span class="shu">ナビ</span></h1>
+      <p>予算・時間・交通手段をまとめて組む、観光の回り方プランナー</p>
+    </div>
+    <label class="dest" for="dest">行き先
+      <select id="dest">
+        <option value="nikko">日光（栃木）</option>
+        <option disabled>鎌倉（準備中）</option>
+        <option disabled>箱根（準備中）</option>
+      </select>
+    </label>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="layout">
+    <form class="form" id="form" autocomplete="off">
+      <div class="field">
+        <span class="label">どんな旅にしたい？</span>
+        <div class="styles" id="styles"></div>
+      </div>
+
+      <div class="row2">
+        <div class="field"><label class="label" for="adults">大人</label><input type="number" id="adults" min="1" max="10" value="2"></div>
+        <div class="field"><label class="label" for="kids">子ども（小学生）</label><input type="number" id="kids" min="0" max="10" value="1"></div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="budget">予算（1人あたり・交通費込み）</label>
+        <div class="yen"><input type="number" id="budget" min="0" step="500" value="12000" class="num"></div>
+        <div class="presets" id="presets"></div>
+      </div>
+
+      <div class="field">
+        <span class="label">日程</span>
+        <div class="seg" id="nights">
+          <button type="button" data-v="0">日帰り</button>
+          <button type="button" data-v="1">1泊2日</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="label">交通手段</span>
+        <div class="seg" id="mode">
+          <button type="button" data-v="train">電車・バス</button>
+          <button type="button" data-v="car">車</button>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field"><label class="label" for="origin">出発地</label>
+          <select class="in" id="origin"></select></div>
+        <div class="field"><label class="label" for="trainPref">電車</label>
+          <select class="in" id="trainPref">
+            <option value="auto">おまかせ</option>
+            <option value="fast">特急で速く</option>
+            <option value="cheap">普通で安く</option>
+          </select></div>
+      </div>
+
+      <div class="row2">
+        <div class="field"><label class="label" for="depart">家を出る時刻</label><input type="time" id="depart" value="07:30" class="num"></div>
+        <div class="field"><label class="label" for="returnBy">帰宅したい時刻</label><input type="time" id="returnBy" value="20:00" class="num"></div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="season">季節</label>
+        <select class="in" id="season"></select>
+      </div>
+
+      <label class="check" for="rain"><input type="checkbox" id="rain"> 雨の予報（屋内スポットを優先）</label>
+
+      <details class="must" id="mustBox">
+        <summary>絶対に行きたい場所を選ぶ <span id="mustCount"></span></summary>
+        <div class="must-list" id="mustList"></div>
+      </details>
+    </form>
+
+    <section class="results" id="results" aria-live="polite"></section>
+  </div>
+</main>
+
+<script src="nikko.js"></script>
+<script>
+(() => {
+  const D = window.MEGURI_DEST.nikko;
+
+  /* ---------- 旅のスタイル ---------- */
+  const STYLES = {
+    yasuku:  { name: "安く回りたい",   sub: "無料スポットとフリーパスを優先",   stayMul: 1.0,  k: 20, costW: 1 / 250,  newArea: 1, train: "cheap", lunch: [1000, 700],  lunchMin: 40, buffer: 0 },
+    ippai:   { name: "たくさん回りたい", sub: "移動を詰めて1か所でも多く",       stayMul: 0.8,  k: 0,  costW: 1 / 3000, newArea: 0, train: "fast",  lunch: [1200, 800],  lunchMin: 35, buffer: 0 },
+    kazoku:  { name: "家族で回りたい",   sub: "子どもが楽しめる所・休憩多め",     stayMul: 1.15, k: 30, costW: 1 / 1500, newArea: 2, train: "fast",  lunch: [1600, 900],  lunchMin: 60, buffer: 10 },
+    yukkuri: { name: "のんびり大人旅",   sub: "エリアを絞ってじっくり",           stayMul: 1.3,  k: 40, costW: 1 / 3000, newArea: 4, train: "fast",  lunch: [2200, 1200], lunchMin: 60, buffer: 5 },
+  };
+
+  const SPOT = {};
+  D.spots.forEach((s, i) => { SPOT[s.id] = Object.assign({ ord: i }, s); });
+  const FARE = {};
+  D.edges.forEach(e => { FARE[e.id] = e.fare; });
+  Object.values(D.innerBus).forEach(b => { FARE[b.id] = b.fare; });
+
+  const halve = f => Math.ceil(f / 2 / 10) * 10;
+  const pad = n => String(n).padStart(2, "0");
+  const fmtT = m => `${Math.floor(m / 60)}:${pad(Math.round(m) % 60)}`;
+  const parseT = v => { const [h, m] = (v || "0:0").split(":").map(Number); return h * 60 + m; };
+  const yen = n => Math.round(n).toLocaleString("ja-JP") + "円";
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  /* エリア間の経路（エリアは駅を中心にした木構造なので、たどるだけで一意に決まる） */
+  const pathCache = {};
+  function pathEdges(a, b) {
+    const key = a + b;
+    if (pathCache[key]) return pathCache[key];
+    const prev = { [a]: null }, q = [a];
+    while (q.length) {
+      const n = q.shift();
+      for (const e of D.edges) {
+        const m = e.a === n ? e.b : e.b === n ? e.a : null;
+        if (m && !(m in prev)) { prev[m] = { n, e }; q.push(m); }
+      }
+    }
+    const out = [];
+    for (let c = b; prev[c]; c = prev[c].n) out.unshift(prev[c].e);
+    return (pathCache[key] = out);
+  }
+
+  function accessOf(ctx) {
+    if (ctx.mode === "car") return { name: D.car.label, min: Math.round(D.car.min * (ctx.season === "autumn" ? 1.25 : 1)), fare: 0, fee: 0 };
+    const o = D.origins[ctx.origin];
+    const pref = ctx.trainPref === "auto" ? STYLES[ctx.style].train : ctx.trainPref;
+    return o.train[pref];
+  }
+
+  /* ---------- 1つのプランを時間どおりに追いかけて、時刻と費用を出す ---------- */
+  function simulate(plan, ctx) {
+    const st = STYLES[ctx.style], season = D.seasons[ctx.season], car = ctx.mode === "car";
+    const orig = D.origins[ctx.origin], acc = accessOf(ctx);
+    const rides = [], adm = { a: 0, c: 0 }, meals = { a: 0, c: 0 }, days = [];
+    let busy = 0, parks = 0, loc = D.hub, lodging = null, homeArrive = 0, spots = 0, ok = true;
+    const last = plan.length - 1;
+
+    plan.forEach((groups, d) => {
+      const items = [];
+      let t, lunch = false;
+      if (d === 0) {
+        t = ctx.depart + acc.min;
+        items.push({ kind: "access", t1: ctx.depart, t2: t, label: car ? `${orig.name}から車（${acc.name}）` : `${orig.name} → ${orig.to}（${acc.name}）` });
+      } else {
+        t = 540;
+        items.push({ kind: "start", t1: t, label: `${D.areas[loc].name}の宿を出発` });
+      }
+      const doLunch = () => {
+        items.push({ kind: "lunch", t1: t, t2: t + st.lunchMin, label: D.areas[loc].lunch });
+        t += st.lunchMin; busy += st.lunchMin; lunch = true;
+        meals.a += st.lunch[0]; meals.c += st.lunch[1];
+      };
+      const go = to => {
+        if (to === loc) return;
+        let m = 0, fare = 0, jammed = false;
+        const lines = [];
+        for (const e of pathEdges(loc, to)) {
+          const jam = e.iroha ? season.jam : 1;
+          if (jam > 1.3) jammed = true;
+          if (car) m += e.car * jam;
+          else { m += e.bus * jam + 10; fare += e.fare; rides.push(e.id); lines.push(e.line); }
+        }
+        m = Math.round((m + st.buffer) / 5) * 5;
+        const label = (car ? "車で移動" : [...new Set(lines)].join(" → ")) + (jammed ? "（紅葉渋滞を見込み）" : "");
+        items.push({ kind: "move", t1: t, t2: t + m, label: `${label}　${D.areas[loc].short} → ${D.areas[to].short}`, fare });
+        t += m; busy += m; loc = to;
+      };
+
+      for (const g of groups) {
+        go(g.area);
+        if (car) parks += D.areas[g.area].park;
+        g.spots.forEach((id, i) => {
+          const s = SPOT[id];
+          let mv = 0, fare = 0, label = "徒歩";
+          if (i > 0) {
+            const ib = D.innerBus[g.area];
+            if (ib && !car) { mv = ib.bus + 10; fare = ib.fare; rides.push(ib.id); label = ib.line; }
+            else if (car) { mv = 5; label = "車で移動"; }
+            else mv = D.areas[g.area].inner;
+          }
+          if (s.walk) mv += car ? Math.round(s.walk / 2) : s.walk;
+          if (mv) { items.push({ kind: "move", t1: t, t2: t + mv, label: `${label} ${mv}分`, fare }); t += mv; busy += mv; }
+          if (!lunch && t >= 690) doLunch();
+          const stay = Math.round(s.stay * st.stayMul / 5) * 5;
+          const start = Math.max(t, s.open);
+          if (start + stay > s.close + season.closeShift) ok = false;
+          busy += start - t + stay;
+          items.push({ kind: "spot", t1: start, t2: start + stay, s, wait: start - t });
+          t = start + stay; spots++;
+          adm.a += s.a; adm.c += s.c;
+        });
+      }
+      if (!lunch && t >= 750) doLunch();
+
+      if (d === last) {
+        go(D.hub);
+        const leave = t + (car ? 0 : 10);
+        homeArrive = leave + acc.min;
+        items.push({ kind: "return", t1: leave, t2: homeArrive, label: car ? `車で${orig.name}方面へ` : `${orig.to} → ${orig.name}（${acc.name}）` });
+        if (homeArrive > ctx.returnBy) ok = false;
+      } else {
+        lodging = loc;
+        items.push({ kind: "lodge", t1: t, label: `${D.areas[loc].name}で宿泊` });
+        if (t > 1050) ok = false;
+      }
+      days.push(items);
+    });
+    if (!ok) return null;
+
+    /* 交通費：その都度払う場合と、各フリーパスを比べて一番安いきっぷを選ぶ */
+    const people = ctx.adults + ctx.kids;
+    let trans = { a: 0, c: 0 }, ticket = null, payEach = null;
+    if (!car) {
+      const sum = (list, child) => list.reduce((x, id) => x + (child ? halve(FARE[id]) : FARE[id]), 0);
+      const accA = 2 * (acc.fare + acc.fee), accC = 2 * (halve(acc.fare) + halve(acc.fee));
+      payEach = { a: accA + sum(rides, false), c: accC + sum(rides, true) };
+      let best = { pass: null, a: payEach.a, c: payEach.c };
+      const grp = x => x.a * ctx.adults + x.c * ctx.kids;
+      for (const p of D.passes) {
+        if (p.access === "tobu" && !orig.tobu) continue;
+        const unc = rides.filter(id => !p.covers.includes(id));
+        if (unc.length === rides.length && !p.access) continue;
+        const cand = {
+          pass: p,
+          a: p.a + sum(unc, false) + (p.access ? 2 * acc.fee : accA),
+          c: p.c + sum(unc, true) + (p.access ? 2 * halve(acc.fee) : accC),
+        };
+        if (grp(cand) < grp(best)) best = cand;
+      }
+      ticket = best; trans = { a: best.a, c: best.c };
+    }
+    const carTotal = car ? 2 * (D.car.toll + D.car.gas) + parks : 0;
+
+    let lodge = { a: 0, c: 0 };
+    if (ctx.nights) {
+      const base = D.areas[lodging].stay;
+      lodge = ctx.style === "yasuku"
+        ? { a: Math.round(base * 0.5 / 100) * 100 + 1500, c: Math.round(base * 0.3 / 100) * 100 + 900 }
+        : { a: base, c: Math.round(base * 0.6 / 100) * 100 };
+    }
+
+    const A = ctx.adults, K = ctx.kids;
+    const groupCost = {
+      trans: A * trans.a + K * trans.c + carTotal,
+      adm: A * adm.a + K * adm.c,
+      meals: A * meals.a + K * meals.c,
+      lodge: A * lodge.a + K * lodge.c,
+    };
+    const total = groupCost.trans + groupCost.adm + groupCost.meals + groupCost.lodge;
+    return {
+      days, busy, spots, homeArrive, lodging, acc, ticket, payEach, carTotal, parks, groupCost, total,
+      perPerson: total / people,
+      adult: trans.a + adm.a + meals.a + lodge.a + carTotal / people,
+      child: trans.c + adm.c + meals.c + lodge.c + carTotal / people,
+    };
+  }
+
+  /* ---------- スポットを1つずつ「一番得な場所」に差し込んでプランを育てる ---------- */
+  function spotValue(s, ctx) {
+    let v = s.score;
+    if (ctx.style === "ippai") v = 5 + s.score * 0.5;
+    if (ctx.style === "kazoku") v = s.score + s.fam * 1.5 - (s.heavy && ctx.kids > 0 ? 4 : 0);
+    if (ctx.style === "yukkuri") v = s.score * 1.2;
+    if (ctx.rain && !s.rain) v -= 4;
+    return v;
+  }
+
+  const clonePlan = p => p.map(day => day.map(g => ({ area: g.area, spots: [...g.spots] })));
+
+  function insertions(plan, s) {
+    const out = [];
+    plan.forEach((day, d) => {
+      const gi = day.findIndex(g => g.area === s.area);
+      if (gi >= 0) {
+        const p = clonePlan(plan);
+        p[d][gi].spots.push(s.id);
+        p[d][gi].spots.sort((x, y) => SPOT[x].ord - SPOT[y].ord);
+        out.push({ plan: p, newArea: false });
+      } else {
+        for (let pos = 0; pos <= day.length; pos++) {
+          const p = clonePlan(plan);
+          p[d].splice(pos, 0, { area: s.area, spots: [s.id] });
+          out.push({ plan: p, newArea: true });
+        }
+      }
+    });
+    return out;
+  }
+
+  function build(ctx) {
+    const st = STYLES[ctx.style];
+    let plan = Array.from({ length: ctx.nights + 1 }, () => []);
+    let base = simulate(plan, ctx);
+    if (!base) return { error: "time" };
+    const overBudget = base.perPerson > ctx.budget;
+    const pool = D.spots.filter(s =>
+      !ctx.excluded.has(s.id) &&
+      !(s.off || []).includes(ctx.season) &&
+      !(s.carOnly && ctx.mode !== "car"));
+    const used = new Set();
+
+    for (;;) {
+      let best = null;
+      for (const s of pool) {
+        if (used.has(s.id)) continue;
+        const must = ctx.must.has(s.id);
+        for (const opt of insertions(plan, s)) {
+          const r = simulate(opt.plan, ctx);
+          if (!r) continue;
+          if (!overBudget && !must && r.perPerson > ctx.budget) continue;
+          const gain = spotValue(s, ctx) - (r.perPerson - base.perPerson) * st.costW - (opt.newArea ? st.newArea : 0);
+          if (gain <= 0 && !must) continue;
+          const crit = (must ? 1000 : 0) + gain / (r.busy - base.busy + st.k + 1);
+          if (!best || crit > best.crit) best = { crit, plan: opt.plan, r, id: s.id };
+        }
+      }
+      if (!best) break;
+      plan = best.plan; base = best.r; used.add(best.id);
+    }
+    const missed = [...ctx.must].filter(id => !used.has(id) && SPOT[id]);
+    return { plan, r: base, overBudget, missed };
+  }
+
+  /* ---------- フォーム ---------- */
+  const $ = id => document.getElementById(id);
+  const state = {
+    style: "kazoku", nights: 0, mode: "train",
+    must: new Set(["toshogu", "kegon"]), excluded: new Set(),
+  };
+
+  const STORE = "meguri-navi-nikko";
+  function load() {
+    try {
+      const v = JSON.parse(localStorage.getItem(STORE) || "null");
+      if (!v) return;
+      Object.assign(state, { style: v.style, nights: v.nights, mode: v.mode, must: new Set(v.must), excluded: new Set(v.excluded) });
+      for (const k of ["adults", "kids", "budget", "origin", "trainPref", "depart", "returnBy", "season"]) if (v[k] != null) $(k).value = v[k];
+      $("rain").checked = !!v.rain;
+    } catch (e) { /* 保存が使えなくても初期値で動く */ }
+  }
+  function save(ctx) {
+    try {
+      localStorage.setItem(STORE, JSON.stringify({
+        style: state.style, nights: state.nights, mode: state.mode, must: [...state.must], excluded: [...state.excluded],
+        adults: $("adults").value, kids: $("kids").value, budget: $("budget").value, origin: $("origin").value,
+        trainPref: $("trainPref").value, depart: $("depart").value, returnBy: $("returnBy").value,
+        season: $("season").value, rain: $("rain").checked,
+      }));
+    } catch (e) { /* 無視 */ }
+  }
+
+  $("origin").innerHTML = Object.entries(D.origins).map(([k, o]) => `<option value="${k}">${o.name}</option>`).join("");
+  $("season").innerHTML = Object.entries(D.seasons).map(([k, s]) => `<option value="${k}">${s.name}</option>`).join("");
+  $("season").value = "autumn";
+  $("presets").innerHTML = [6000, 10000, 15000, 25000].map(v => `<button type="button" data-v="${v}">${v.toLocaleString()}円</button>`).join("");
+  $("styles").innerHTML = Object.entries(STYLES).map(([k, s]) =>
+    `<button type="button" class="style-opt" data-v="${k}"><b>${s.name}</b><small>${s.sub}</small></button>`).join("");
+
+  function renderMust() {
+    const ctxSeason = $("season").value, car = state.mode === "car";
+    $("mustList").innerHTML = Object.entries(D.areas).filter(([a]) => D.spots.some(s => s.area === a)).map(([a, ar]) => `
+      <div><div class="must-area">${ar.name}</div><div class="chips">${D.spots.filter(s => s.area === a).map(s => {
+        const na = (s.off || []).includes(ctxSeason) || (s.carOnly && !car);
+        return `<button type="button" class="chip" data-id="${s.id}" aria-pressed="${state.must.has(s.id)}" ${na ? "disabled title='この条件では行けません'" : ""}>${s.name}</button>`;
+      }).join("")}</div></div>`).join("");
+    $("mustCount").textContent = state.must.size ? `（${state.must.size}）` : "";
+  }
+
+  function syncButtons() {
+    document.querySelectorAll("#styles .style-opt").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === state.style));
+    document.querySelectorAll("#nights button").forEach(b => b.setAttribute("aria-pressed", +b.dataset.v === state.nights));
+    document.querySelectorAll("#mode button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === state.mode));
+    $("trainPref").disabled = state.mode === "car";
+    $("origin").previousElementSibling.textContent = state.mode === "car" ? "出発地（東京都心）" : "出発地";
+  }
+
+  function readCtx(style) {
+    const adults = Math.max(1, Math.min(10, +$("adults").value || 1));
+    const kids = Math.max(0, Math.min(10, +$("kids").value || 0));
+    return {
+      style: style || state.style, nights: state.nights, mode: state.mode,
+      adults, kids, budget: Math.max(0, +$("budget").value || 0),
+      origin: $("origin").value, trainPref: $("trainPref").value,
+      depart: parseT($("depart").value), returnBy: parseT($("returnBy").value),
+      season: $("season").value, rain: $("rain").checked,
+      must: state.must, excluded: state.excluded,
+    };
+  }
+
+  /* ---------- 結果の描画 ---------- */
+  function render() {
+    syncButtons();
+    renderMust();
+    const ctx = readCtx();
+    save(ctx);
+    const res = build(ctx);
+    const out = $("results");
+    if (res.error) {
+      out.innerHTML = `<div class="alert">出発から帰宅までの時間が短すぎて、日光まで往復できません。家を出る時刻を早めるか、帰宅時刻を遅くしてください。</div>`;
+      return;
+    }
+    const { r, overBudget, missed } = res;
+    const st = STYLES[ctx.style], season = D.seasons[ctx.season], people = ctx.adults + ctx.kids;
+    const alerts = [];
+    if (overBudget) alerts.push(`予算 ${yen(ctx.budget)}/人 では交通費だけで足りません。最低でも1人あたり約 ${yen(Math.ceil(r.perPerson / 500) * 500)} かかるプランを表示しています。`);
+    else if (r.perPerson > ctx.budget) alerts.push(`「絶対に行きたい場所」を優先したため予算を超えています。行きたい場所を減らすと予算内に収まる場合があります。`);
+    if (missed.length) alerts.push(`「${missed.map(id => SPOT[id].name).join("」「")}」は時間か営業時間の都合で入りませんでした。日程を1泊にするか、帰宅時刻を遅くすると入る場合があります。`);
+    const info = [];
+    if (season.tip) info.push(season.tip);
+    if (ctx.rain) info.push("雨の予報なので、屋内で楽しめるスポットを優先しています。");
+
+    const pct = Math.min(100, r.perPerson / Math.max(1, ctx.budget) * 100);
+    const over = r.perPerson > ctx.budget;
+    const remaining = ctx.budget - r.perPerson;
+
+    let html = "";
+    if (alerts.length || info.length) html += `<div class="alerts">${alerts.map(a => `<div class="alert">${esc(a)}</div>`).join("")}${info.map(a => `<div class="alert info">${esc(a)}</div>`).join("")}</div>`;
+
+    html += `<div class="summary">
+      <div class="stat"><span class="k">1人あたり</span><span class="v num">${Math.round(r.perPerson).toLocaleString()}<small>円</small></span>
+        <div class="meter ${over ? "over" : ""}"><i style="width:${pct}%"></i></div>
+        <span class="s num">${over ? `予算を${yen(-remaining)}超え` : `予算まであと${yen(remaining)}`}</span></div>
+      <div class="stat"><span class="k">${people}人の合計</span><span class="v num">${Math.round(r.total).toLocaleString()}<small>円</small></span>
+        <span class="s num">大人 ${yen(r.adult)}${ctx.kids ? `／子ども ${yen(r.child)}` : ""}</span></div>
+      <div class="stat"><span class="k">回るスポット</span><span class="v num">${r.spots}<small>か所</small></span>
+        <span class="s">${st.name}</span></div>
+      <div class="stat"><span class="k">帰宅</span><span class="v num">${fmtT(r.homeArrive)}</span>
+        <span class="s num">希望 ${fmtT(ctx.returnBy)} まで</span></div>
+    </div>`;
+
+    /* きっぷ */
+    let tk = "";
+    if (ctx.mode === "car") {
+      tk += ticketCard("車", D.car.label, `高速 約${yen(D.car.toll)}・ガソリン 約${yen(D.car.gas)}（片道）`,
+        `往復＋駐車場で ${yen(r.carTotal)}。${people}人で割ると1人 ${yen(r.carTotal / people)}`);
+    } else {
+      const o = D.origins[ctx.origin];
+      tk += ticketCard("行き帰りの電車", r.acc.name, `${o.name} ⇄ ${o.to}　片道 約${Math.floor(r.acc.min / 60)}時間${pad(r.acc.min % 60)}分`,
+        `運賃 ${yen(r.acc.fare)}${r.acc.fee ? `＋特急料金 ${yen(r.acc.fee)}` : ""}（大人片道）`);
+      const p = r.ticket.pass;
+      if (p) {
+        const save = (r.payEach.a - r.ticket.a) * ctx.adults + (r.payEach.c - r.ticket.c) * ctx.kids;
+        tk += ticketCard("おすすめのきっぷ", p.name, p.note, `大人 ${yen(p.a)}${ctx.kids ? `／子ども ${yen(p.c)}` : ""}。その都度払うより ${people}人で約${yen(save)}おトク`);
+      } else {
+        tk += ticketCard("現地の乗り物", "交通系ICカードでその都度払う", "このプランではフリーパスを買うと割高になります", `現地のバス・電車代は大人 約${yen(r.payEach.a - 2 * (r.acc.fare + r.acc.fee))}`);
+      }
+    }
+    html += `<section><div class="section-h"><h2>交通とおすすめのきっぷ</h2><p>きっぷは行程に合わせて自動で一番安いものを選んでいます</p></div><div class="tickets">${tk}</div></section>`;
+
+    /* 行程 */
+    html += `<section><div class="section-h"><h2>回り方</h2><p>時刻は目安です。外したいスポットは「外す」を押すと組み直します</p></div>`;
+    r.days.forEach((items, d) => {
+      const n = items.filter(x => x.kind === "spot").length;
+      html += `<div class="day"><div class="day-h">${r.days.length > 1 ? `${d + 1}日目` : "日帰り"}<span>${n}か所</span></div><ol class="tl">`;
+      for (const it of items) html += itemHtml(it, ctx);
+      html += `</ol></div>`;
+    });
+    if (state.excluded.size) {
+      html += `<div class="removed" style="margin-top:12px">外したスポット：${[...state.excluded].filter(id => SPOT[id]).map(id =>
+        `<button type="button" class="chip" data-restore="${id}">${esc(SPOT[id].name)} を戻す</button>`).join("")}</div>`;
+    }
+    html += `</section>`;
+
+    /* 費用と比較 */
+    const g = r.groupCost, maxC = Math.max(g.trans, g.adm, g.meals, g.lodge, 1);
+    const crow = (k, v) => `<tr><td>${k}</td><td style="width:40%"><div class="bar" style="width:${v / maxC * 100}%"></div></td><td class="r num">${yen(v)}</td></tr>`;
+    let cmp = "";
+    for (const [k, s] of Object.entries(STYLES)) {
+      const alt = k === ctx.style ? res : build(readCtx(k));
+      if (alt.error) continue;
+      cmp += `<tr class="${k === ctx.style ? "on" : ""}"><td>${k === ctx.style ? `<b>${s.name}</b>` : `<button type="button" data-style="${k}">${s.name}</button>`}</td>
+        <td class="r num">${alt.r.spots}か所</td><td class="r num">${yen(alt.r.perPerson)}</td><td class="r num">${fmtT(alt.r.homeArrive)}</td></tr>`;
+    }
+    html += `<div class="two">
+      <section class="panel"><div class="section-h"><h2>費用の内訳</h2><p>${people}人分</p></div>
+        <div class="scroll"><table class="num"><tbody>
+          ${crow(ctx.mode === "car" ? "交通（高速・ガソリン・駐車場）" : "交通（電車・バス）", g.trans)}
+          ${crow("拝観・入場・体験", g.adm)}
+          ${crow("食事", g.meals)}
+          ${ctx.nights ? crow(ctx.style === "yasuku" ? "宿泊（素泊まり＋夕食）" : "宿泊（1泊2食）", g.lodge) : ""}
+        </tbody><tfoot><tr><td>合計</td><td></td><td class="r">${yen(r.total)}</td></tr></tfoot></table></div>
+      </section>
+      <section class="panel"><div class="section-h"><h2>ほかのスタイルなら</h2><p>同じ予算・時間で組んだ場合</p></div>
+        <div class="scroll"><table class="cmp"><thead><tr><th>スタイル</th><th class="r">スポット</th><th class="r">1人</th><th class="r">帰宅</th></tr></thead><tbody>${cmp}</tbody></table></div>
+      </section>
+    </div>`;
+
+    html += `<p class="foot">料金・所要時間・営業時間は2026年時点の目安で、時刻表は考慮していません。お出かけ前に各施設・東武鉄道・JR東日本・東武バスの公式情報を確認してください。子どもは小学生料金（大人の約半額）で計算しています。</p>`;
+    out.innerHTML = html;
+  }
+
+  function ticketCard(k, n, d, p) {
+    return `<div class="ticket"><span class="t-k">${esc(k)}</span><span class="t-n">${esc(n)}</span><span class="t-d">${esc(d)}</span><span class="t-p num">${esc(p)}</span></div>`;
+  }
+
+  function itemHtml(it, ctx) {
+    const li = (cls, time, body) => `<li class="${cls}"><span class="time num">${time}</span><span class="rail"><span class="dot"></span></span><div class="body">${body}</div></li>`;
+    switch (it.kind) {
+      case "access":
+      case "return":
+        return li("", fmtT(it.t1), `<div class="sp-top"><span class="sp-name">${it.kind === "access" ? "出発" : "帰路"}</span></div>
+          <p class="sp-note num">${esc(it.label)}　${fmtT(it.t1)} → ${fmtT(it.t2)}${it.kind === "return" ? " 帰宅" : " 着"}</p>`);
+      case "start":
+        return li("", fmtT(it.t1), `<div class="sp-top"><span class="sp-name">${esc(it.label)}</span></div>`);
+      case "lodge":
+        return li("", fmtT(it.t1), `<div class="sp-top"><span class="sp-name">${esc(it.label)}</span></div><p class="sp-note">チェックイン。夕食と温泉でひと休み</p>`);
+      case "move":
+        return li("mv", `${Math.round(it.t2 - it.t1)}分`, `${esc(it.label)}${it.fare ? `　<span class="num">${yen(it.fare)}</span>` : ""}`);
+      case "lunch":
+        return li("lunch", fmtT(it.t1), `<div class="sp-top"><span class="sp-name">昼ごはん</span><span class="tag">${Math.round(it.t2 - it.t1)}分</span></div>
+          <p class="sp-note">${esc(it.label)}（大人 約${yen(STYLES[ctx.style].lunch[0])}）</p>`);
+      case "spot": {
+        const s = it.s;
+        const price = s.a ? `大人 ${yen(s.a)}${ctx.kids ? `／子ども ${yen(s.c)}` : ""}` : "無料";
+        return li("spot", fmtT(it.t1), `<div class="sp-top"><span class="sp-name">${esc(s.name)}</span>
+            <span class="tag">${D.areas[s.area].short}</span>${state.must.has(s.id) ? `<span class="tag must">行きたい</span>` : ""}${s.rain ? `<span class="tag">雨OK</span>` : ""}</div>
+          <p class="sp-note">${esc(s.note)}</p>
+          <div class="sp-meta num"><span>${fmtT(it.t1)}–${fmtT(it.t2)}（${it.t2 - it.t1}分）</span><span>${price}</span>${it.wait > 5 ? `<span>開門まで${it.wait}分待ち</span>` : ""}
+            <button type="button" class="rm" data-remove="${s.id}">外す</button></div>`);
+      }
+    }
+    return "";
+  }
+
+  /* ---------- イベント ---------- */
+  document.addEventListener("click", e => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    if (b.closest("#styles")) state.style = b.dataset.v;
+    else if (b.closest("#nights")) state.nights = +b.dataset.v;
+    else if (b.closest("#mode")) state.mode = b.dataset.v;
+    else if (b.closest("#presets")) $("budget").value = b.dataset.v;
+    else if (b.dataset.id) { state.must.has(b.dataset.id) ? state.must.delete(b.dataset.id) : state.must.add(b.dataset.id); state.excluded.delete(b.dataset.id); }
+    else if (b.dataset.remove) { state.excluded.add(b.dataset.remove); state.must.delete(b.dataset.remove); }
+    else if (b.dataset.restore) state.excluded.delete(b.dataset.restore);
+    else if (b.dataset.style) state.style = b.dataset.style;
+    else return;
+    render();
+  });
+  $("form").addEventListener("input", render);
+  $("form").addEventListener("submit", e => e.preventDefault());
+
+  load();
+  render();
+})();
+</script>
+</body>
+</html>
