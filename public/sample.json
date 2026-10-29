@@ -1,0 +1,27 @@
+[
+  {
+    "name": "サンプル団体（架空・非公開）",
+    "university": "早稲田大学",
+    "campus": "早稲田",
+    "category": "スポーツ",
+    "description": "活動内容を入力してください",
+    "days": "火、金",
+    "periods": "2,4",
+    "location": "活動場所",
+    "frequency": "週2回",
+    "cost": "月1000円",
+    "members": "20",
+    "beginner": 1,
+    "experienced": 0,
+    "concurrent": 1,
+    "official": 0,
+    "trial": 1,
+    "conditions": "参加条件",
+    "website": "https://example.org",
+    "sns": "https://example.org",
+    "trial_url": "https://example.org",
+    "contact": "公式フォーム",
+    "verified": 0,
+    "published": 0
+  }
+]
