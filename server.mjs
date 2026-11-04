@@ -77,7 +77,6 @@ const app=http.createServer(async(req,res)=>{try{
   const a=getAccount(req);if(a){const token=cookieValue(req,'sn_account');db.prepare('DELETE FROM account_sessions WHERE token_hash=?').run(createHash('sha256').update(token).digest('hex'));}
   return send(res,200,{ok:true},{'set-cookie':accountCookie('',0)});
  }
- if(url.pathname==='/api/events'&&req.method==='GET')return send(res,200,db.prepare(`SELECT e.id,e.circle_id,e.title,e.description,e.starts_at,e.location,e.capacity,e.application_deadline,c.name AS circle_name,c.campus,c.category FROM events e JOIN circles c ON c.id=e.circle_id WHERE e.status='open' AND c.published=1 AND c.verified=1 AND e.starts_at IS NOT NULL AND datetime(e.starts_at)>=datetime('now') ORDER BY e.starts_at,e.id`).all());
  if(url.pathname==='/api/circles/events'&&req.method==='GET')return send(res,400,{error:'団体IDが必要です'});
  const publicEvents=url.pathname.match(/^\/api\/circles\/(\d+)\/events$/);
  if(publicEvents&&req.method==='GET')return send(res,200,db.prepare(`SELECT e.id,e.circle_id,e.title,e.description,e.starts_at,e.location,e.capacity,e.application_deadline,e.status,c.name AS circle_name FROM events e JOIN circles c ON c.id=e.circle_id WHERE e.circle_id=? AND e.status='open' AND c.published=1 AND c.verified=1 ORDER BY e.starts_at,e.id`).all(Number(publicEvents[1])));
