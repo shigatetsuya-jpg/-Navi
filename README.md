@@ -70,11 +70,11 @@ Windowsでキーを作る例:
 2. Render Dashboardで「New」→「Blueprint」を選び、`shigatetsuya-jpg/-Navi` を接続して、デプロイ対象ブランチを `shinkanavi-render` に指定し、`render.yaml` を読み込みます。
 3. `ADMIN_SETUP_TOKEN` を入力してBlueprintを適用します。これは初回管理者登録専用の秘密値です。初期設定が終わったらRenderのEnvironmentから削除します。
 4. Renderが表示する料金と構成を確認してから、デプロイを確定します。Freeサービスではディスクが永続化されないため、この構成は有料の最小Webプランを指定しています。
-5. 発行された `onrender.com` URLを開き、`/admin.html` から管理者を登録して、確認済みの実データを登録します。
+5. Renderが発行した `onrender.com` URLを開き、`/admin.html` から管理者を登録して、確認済みの実データを登録します。
 
 2026-10-29時点の概算は、Webサービスが月7米ドル、1GBディスクが月0.25米ドルで、**合計月7.25米ドルから**（税・追加使用量・為替手数料別）です。Hobby workspace自体は無料ですが、永続ディスクを使うWebサービスは有料プランが必要です。ディスク利用中は一度に1インスタンスで動作し、再デプロイ時に数秒の停止があり得ます。料金は確定前にRender画面で再確認してください。
 
-参照: [Render Blueprint](https://render.com/docs/blueprint-spec)、[永続ディスク](https://render.com/docs/disks)、[料金](https://render.com/pricing)、[Node.jsバージョン設定](https://render.com/docs/node-version)。Renderの本番サービスは未作成のため、公開URLは未発行です。旧GitHub PagesはRenderの公開先が確定してから新版へ転送します。
+参照: [Render Blueprint](https://render.com/docs/blueprint-spec)、[永続ディスク](https://render.com/docs/disks)、[料金](https://render.com/pricing)、[Node.jsバージョン設定](https://render.com/docs/node-version)。RenderのURLは環境変数 `RENDER_EXTERNAL_URL` から取得します。`PUBLIC_SITE_URL` を設定すると独自ドメインに切り替えられます。旧GitHub Pages版は参考用に公開を継続します。
 
 ## 仕様上の注意
 
@@ -83,3 +83,10 @@ Windowsでキーを作る例:
 - 初回DB構築は `migrations/001-init.sql` で行い、適用版を `schema_migrations` に記録します。将来の列変更には連番マイグレーションを追加してください。
 - 公開前に運営問い合わせ先、利用規約、プライバシー情報を用意してください。現状は未設定と表示します。
 
+## 検索エンジン向け設定
+
+- トップページに日本語の説明文、canonical URL、Open Graph情報を設定します。
+- /robots.txt と、公開・確認済みサークルの /circle/:id を含む /sitemap.xml を動的生成します。サークル紹介ページは検索エンジンが本文を読めるHTMLとして配信します。
+- ログイン、マイページ、管理画面には 
+oindex を指定します。obots.txt ではページの巡回を遮らず、検索結果への登録だけを抑制します。
+- Google Search Consoleで所有権確認後、https://<公開ホスト>/sitemap.xml を送信してください。
