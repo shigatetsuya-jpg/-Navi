@@ -24,7 +24,7 @@ test('confirmed addresses, expiry, resend, application capacity, isolation and m
  queue.run('other@example.test','application-status','{"eventTitle":"Legacy queue"}');
  queue.run('other@example.test','email-verification',JSON.stringify({token:'e'.repeat(43),expiresAt:Date.now()-1}));
  db.prepare('INSERT INTO email_verifications VALUES(?,?,?,datetime(\'now\'))').run(1,hash('a'.repeat(43)),Date.now()+60000);
- const child=spawn(process.execPath,['--import',new URL('test/fixtures/mail-transport.mjs',root).pathname,new URL('server.mjs',root).pathname],{cwd:root,env:{...process.env,DB_PATH:path,PORT:String(port),HOST:'127.0.0.1',RESEND_API_KEY:'test-only',EMAIL_FROM:'navi@example.test',TEST_MAIL_LOG:log},stdio:'ignore'});
+ const child=spawn(process.execPath,['--import',new URL('test/fixtures/mail-transport.mjs',root).pathname,new URL('server.mjs',root).pathname],{cwd:root,env:{...process.env,DB_PATH:path,PORT:String(port),HOST:'127.0.0.1',EMAIL_DELIVERY_DISABLED:'0',RESEND_API_KEY:'test-only',EMAIL_FROM:'navi@example.test',TEST_MAIL_LOG:log},stdio:'ignore'});
  t.after(async()=>{if(child.exitCode===null){child.kill();await new Promise(r=>child.once('exit',r))}db.close();await rm(dir,{recursive:true,force:true})});
  const base=`http://127.0.0.1:${port}`;
  async function api(route,id,body){return fetch(base+route,{method:body===undefined?'GET':'POST',headers:{'content-type':'application/json',...(id?{cookie:'sn_account=session'+id}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})})}

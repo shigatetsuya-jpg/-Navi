@@ -5,6 +5,7 @@ import { resolve, extname, sep, dirname } from 'node:path';
 import { randomBytes, scryptSync, timingSafeEqual, createHash } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
 import { backupDatabase } from './scripts/backup-db.mjs';
+import { applyMigration } from './scripts/migrate-db.mjs';
 
 const root = resolve('public');
 const dbPath=resolve(process.env.DB_PATH || './data/shinkanavi.sqlite');
@@ -12,8 +13,8 @@ mkdirSync(dirname(dbPath), { recursive:true });
 const db = new DatabaseSync(dbPath);
 db.exec(`PRAGMA busy_timeout=5000; PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; CREATE TABLE IF NOT EXISTS schema_migrations(version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL DEFAULT (datetime('now')));`);
 const applied=db.prepare('SELECT version FROM schema_migrations').all().map(x=>x.version);
-if(!applied.includes(1)){db.exec(await readFile(resolve('migrations/001-init.sql'),'utf8'));db.prepare('INSERT INTO schema_migrations(version) VALUES(1)').run();}
-if(!applied.includes(2)){db.exec(await readFile(resolve('migrations/002-accounts-events.sql'),'utf8'));db.prepare('INSERT INTO schema_migrations(version) VALUES(2)').run();}
+if(!applied.includes(1))await applyMigration(db,1,resolve('migrations/001-init.sql'));
+if(!applied.includes(2))await applyMigration(db,2,resolve('migrations/002-accounts-events.sql'));
 // Preserve existing data before upgrading the notification schema. A failed
 // backup aborts startup before any notification migration is attempted.
 if(applied.length&&(!applied.includes(3)||!applied.includes(4))){
@@ -21,8 +22,8 @@ if(applied.length&&(!applied.includes(3)||!applied.includes(4))){
  await backupDatabase(dbPath,backupPath);
  console.log('Database backup verified before email schema upgrade');
 }
-if(!applied.includes(3)){db.exec(await readFile(resolve('migrations/003-email-outbox.sql'),'utf8'));db.prepare('INSERT INTO schema_migrations(version) VALUES(3)').run();}
-if(!applied.includes(4)){db.exec(await readFile(resolve('migrations/004-email-verification.sql'),'utf8'));db.prepare('INSERT INTO schema_migrations(version) VALUES(4)').run();}
+if(!applied.includes(3))await applyMigration(db,3,resolve('migrations/003-email-outbox.sql'));
+if(!applied.includes(4))await applyMigration(db,4,resolve('migrations/004-email-verification.sql'));
 const sessions = db.prepare('SELECT a.id FROM sessions s JOIN admins a ON a.id=s.admin_id WHERE s.token_hash=? AND s.expires_at>?');
 const loginFailures=new Map();
 const send=(res,status,data,headers={})=>{res.writeHead(status,{'content-type':'application/json; charset=utf-8','cache-control':'no-store',...headers});res.end(JSON.stringify(data));};
@@ -46,7 +47,7 @@ function managedCircles(accountId){return db.prepare(`SELECT c.id,c.name,c.unive
 function publicAccount(a){return {id:a.id,email:a.email,email_verified:Boolean(a.email_verified),email_verification_required:emailEnabled(),display_name:a.display_name,account_type:a.account_type,university:a.university,school_year:a.school_year,circles:a.account_type==='organization'?managedCircles(a.id):[]};}
 function rejectForeignOrigin(req,res){const origin=req.headers.origin;if(!origin)return false;try{if(new URL(origin).host===req.headers.host)return false;}catch{}send(res,403,{error:'別のサイトからのリクエストは受け付けません'});return true;}
 function validCapacity(v){const n=Number(v);return Number.isInteger(n)&&n>=1&&n<=5000?n:null;}
-const emailEnabled=()=>Boolean(process.env.RESEND_API_KEY&&process.env.EMAIL_FROM);
+const emailEnabled=()=>process.env.EMAIL_DELIVERY_DISABLED!=='1'&&Boolean(process.env.RESEND_API_KEY&&process.env.EMAIL_FROM);
 function enqueueEmail(recipient,kind,payload){if(!emailEnabled()||!recipient)return;if(kind!=='email-verification'&&!db.prepare('SELECT email_verified FROM accounts WHERE email=?').get(recipient)?.email_verified)return;db.prepare('INSERT INTO email_outbox(recipient,kind,payload_json) VALUES(?,?,?)').run(recipient,kind,JSON.stringify(payload));}
 function issueEmailVerification(account){if(!emailEnabled()||!account)return;const token=randomBytes(32).toString('base64url'),expiresAt=Date.now()+24*60*60*1000,tokenHash=createHash('sha256').update(token).digest('hex');db.prepare(`INSERT INTO email_verifications(account_id,token_hash,expires_at) VALUES(?,?,?) ON CONFLICT(account_id) DO UPDATE SET token_hash=excluded.token_hash,expires_at=excluded.expires_at,created_at=datetime('now')`).run(account.id,tokenHash,expiresAt);enqueueEmail(account.email,'email-verification',{token,expiresAt});}
 const emailEscape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
