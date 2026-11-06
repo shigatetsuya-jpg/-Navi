@@ -43,3 +43,12 @@ Render月$7.25にドメイン年$11.17を加えると、仮換算で月平均約
 
 ドメイン名は大学公式と誤認させず、他大学展開にも使える名前を選ぶ。例としてshinkan-navi.com、shinkanavi.com等が考えられるが、空き・商標等の確認前なので取得可能・使用可能とは扱わない。実際の購入候補1件の空きと最終金額を確認してから、ユーザーへ個別に承認を求める。
 購入・アカウント作成・DNS変更・送信は未実施。メール設定を待つ間もその他の試用準備を続ける。
+
+## 候補名の登録情報調査
+2026年11月7日、VerisignのRDAPを参照。
+- shinkan-navi.com：登録情報404。第一候補案。
+- shinkanavi.com：登録情報200。既に登録情報があるため取得候補から外す。
+- shinkan-navi.net：登録情報404。代替候補。
+
+RDAP：https://rdap.verisign.com/com/v1/domain/shinkan-navi.com 、https://rdap.verisign.com/com/v1/domain/shinkanavi.com 、https://rdap.verisign.com/net/v1/domain/shinkan-navi.net 。登録情報がないことだけでは購入可能性や最終価格を保証しない。販売側の検索・購入確認画面で確認する。
+Cloudflare公式の一般.com標準料金は初年度・更新とも年$11.17。1ドル158円の仮換算で約1,765円、税手数料等は別。候補そのものの注文価格は未確定。予約・購入は未実施。

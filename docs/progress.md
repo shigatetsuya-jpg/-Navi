@@ -57,3 +57,6 @@ Resend公式のドメイン追加・標準送信元の制限を確認し、email
 
 ## 独自ドメイン未取得の確認と費用調査（T02）
 ユーザーは独自ドメイン未取得。Cloudflare/Porkbunの公式.com年額と更新年額、Resend公式無料枠を確認してemail-sender-plan.mdへ記録。一般.comは年約1,800〜1,900円（1ドル158円の仮換算、税手数料別）、Render込み月平均約1,300円の案。ドメイン名の空き・最終価格は未確認。契約・購入・実メール送信は行っていない。
+
+## ドメイン候補の登録状況
+Verisign RDAPで候補3件を確認。shinkan-navi.comとshinkan-navi.netは404、shinkanavi.comは登録情報あり。shinkan-navi.comを第一候補として提示する案。未登録情報＝注文可能とは断定せず、最終価格と取得可否は販売側の確認が必要。購入・設定変更なし。
