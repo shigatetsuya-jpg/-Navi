@@ -13,7 +13,7 @@ async function until(fn){for(let i=0;i<150;i++){if(await fn())return;await new P
 test('confirmed addresses, expiry, resend, application capacity, isolation and mail delivery',async t=>{
  const dir=await mkdtemp(join(tmpdir(),'navi-mail-')),path=join(dir,'db.sqlite'),log=join(dir,'mail.jsonl');
  const s=createServer();await new Promise(r=>s.listen(0,'127.0.0.1',r));const port=s.address().port;await new Promise(r=>s.close(r));
- const db=new DatabaseSync(path);db.exec('PRAGMA foreign_keys=ON;CREATE TABLE schema_migrations(version INTEGER PRIMARY KEY)');
+ const db=new DatabaseSync(path);db.exec('PRAGMA busy_timeout=5000;PRAGMA foreign_keys=ON;CREATE TABLE schema_migrations(version INTEGER PRIMARY KEY)');
  for(const [i,file] of ['001-init.sql','002-accounts-events.sql','003-email-outbox.sql','004-email-verification.sql'].entries()){db.exec(await readFile(new URL('migrations/'+file,root),'utf8'));db.prepare('INSERT INTO schema_migrations VALUES(?)').run(i+1)}
  const account=db.prepare('INSERT INTO accounts(id,email,display_name,account_type,salt,password_hash,email_verified) VALUES(?,?,?,?,?,?,?)');
  for(const [id,email,role,verified] of [[1,'student@example.test','member',0],[2,'waiting@example.test','member',1],[3,'manager@example.test','organization',1],[4,'other@example.test','organization',0],[5,'retry@example.test','member',1]]){account.run(id,email,'Private Student Name',role,'salt','hash',verified);db.prepare('INSERT INTO account_sessions VALUES(?,?,?)').run(hash('session'+id),id,Date.now()+60000)}

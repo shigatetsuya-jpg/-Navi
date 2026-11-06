@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve, extname, sep, dirname } from 'node:path';
 import { randomBytes, scryptSync, timingSafeEqual, createHash } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
+import { backupDatabase } from './scripts/backup-db.mjs';
 
 const root = resolve('public');
 const dbPath=resolve(process.env.DB_PATH || './data/shinkanavi.sqlite');
@@ -13,6 +14,13 @@ db.exec(`PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; CREATE TABLE IF NOT EX
 const applied=db.prepare('SELECT version FROM schema_migrations').all().map(x=>x.version);
 if(!applied.includes(1)){db.exec(await readFile(resolve('migrations/001-init.sql'),'utf8'));db.prepare('INSERT INTO schema_migrations(version) VALUES(1)').run();}
 if(!applied.includes(2)){db.exec(await readFile(resolve('migrations/002-accounts-events.sql'),'utf8'));db.prepare('INSERT INTO schema_migrations(version) VALUES(2)').run();}
+// Preserve existing data before upgrading the notification schema. A failed
+// backup aborts startup before any notification migration is attempted.
+if(applied.length&&(!applied.includes(3)||!applied.includes(4))){
+ const backupPath=resolve(dirname(dbPath),'backups',`before-email-upgrade-${Date.now()}-${randomBytes(6).toString('hex')}.sqlite`);
+ await backupDatabase(dbPath,backupPath);
+ console.log('Database backup verified before email schema upgrade');
+}
 if(!applied.includes(3)){db.exec(await readFile(resolve('migrations/003-email-outbox.sql'),'utf8'));db.prepare('INSERT INTO schema_migrations(version) VALUES(3)').run();}
 if(!applied.includes(4)){db.exec(await readFile(resolve('migrations/004-email-verification.sql'),'utf8'));db.prepare('INSERT INTO schema_migrations(version) VALUES(4)').run();}
 const sessions = db.prepare('SELECT a.id FROM sessions s JOIN admins a ON a.id=s.admin_id WHERE s.token_hash=? AND s.expires_at>?');
