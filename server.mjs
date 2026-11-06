@@ -10,7 +10,7 @@ const root = resolve('public');
 const dbPath=resolve(process.env.DB_PATH || './data/shinkanavi.sqlite');
 mkdirSync(dirname(dbPath), { recursive:true });
 const db = new DatabaseSync(dbPath);
-db.exec(`PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; CREATE TABLE IF NOT EXISTS schema_migrations(version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL DEFAULT (datetime('now')));`);
+db.exec(`PRAGMA busy_timeout=5000; PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; CREATE TABLE IF NOT EXISTS schema_migrations(version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL DEFAULT (datetime('now')));`);
 const applied=db.prepare('SELECT version FROM schema_migrations').all().map(x=>x.version);
 if(!applied.includes(1)){db.exec(await readFile(resolve('migrations/001-init.sql'),'utf8'));db.prepare('INSERT INTO schema_migrations(version) VALUES(1)').run();}
 if(!applied.includes(2)){db.exec(await readFile(resolve('migrations/002-accounts-events.sql'),'utf8'));db.prepare('INSERT INTO schema_migrations(version) VALUES(2)').run();}
@@ -124,6 +124,7 @@ const app=http.createServer(async(req,res)=>{try{
   db.exec('BEGIN IMMEDIATE');try{
    const event=db.prepare(`SELECT e.*,c.id AS circle_id,c.name AS circle_name FROM events e JOIN circles c ON c.id=e.circle_id WHERE e.id=? AND e.status='open' AND c.published=1 AND c.verified=1`).get(eventId);
    if(!event){db.exec('ROLLBACK');return send(res,404,{error:'受付中のイベントが見つかりません'});}
+   if(event.starts_at&&Date.parse(event.starts_at)<Date.now()){db.exec('ROLLBACK');return send(res,409,{error:'開催日時を過ぎたイベントには申し込めません'});}
    if(event.application_deadline&&Date.parse(event.application_deadline)<Date.now()){db.exec('ROLLBACK');return send(res,409,{error:'申し込み期限を過ぎています'});}
    const existing=db.prepare('SELECT id,status FROM applications WHERE event_id=? AND member_id=?').get(eventId,a.id);
    if(existing&&!['cancelled','rejected'].includes(existing.status)){db.exec('ROLLBACK');return send(res,409,{error:'このイベントには申し込み済みです'});}
