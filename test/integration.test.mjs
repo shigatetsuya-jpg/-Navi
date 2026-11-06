@@ -56,6 +56,8 @@ test('public and admin API flow', async t=>{
  INSERT INTO events(id,circle_id,title,capacity,status,starts_at) VALUES(1,${id},'Future',10,'open','2099-04-01T00:00:00Z'),(2,${id},'Past',10,'open','2000-01-01T00:00:00Z');
  INSERT INTO applications(event_id,member_id,status) VALUES(1,1,'approved'),(2,1,'cancelled');`);
  const metrics=await(await fetch(base+'/api/admin/stats',{headers:auth})).json();
+ const publicEvents=await(await fetch(base+`/api/circles/${id}/events`)).json();assert.equal(publicEvents.length,1);assert.equal(publicEvents[0].title,'Future');
+ const circleHtml=await(await fetch(base+`/circle/${id}`)).text();assert.ok(circleHtml.includes('Future'));assert.ok(!circleHtml.includes('>Past<'));
  assert.equal(metrics.verified_public,1);assert.equal(metrics.members,1);assert.equal(metrics.organizations,1);assert.equal(metrics.active_organizations_30d,1);assert.equal(metrics.applicants_30d,1);assert.equal(metrics.applications_30d,2);assert.equal(metrics.approved_applications_30d,1);assert.equal(metrics.open_events,1);
  assert.ok(!JSON.stringify(metrics).includes('@'));assert.ok(!Number.isNaN(Date.parse(metrics.measured_at)));
  }finally{statsDb.close()}
