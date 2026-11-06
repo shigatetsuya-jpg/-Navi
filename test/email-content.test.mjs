@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderNotificationEmail } from '../scripts/render-email.mjs';
-const options={from:'新歓ナビ <notify@example.test>',origin:'https://example.test'};
+const options={from:'ワセサークルナビ <notify@example.test>',origin:'https://example.test'};
 function render(kind,values){return renderNotificationEmail({recipient:'recipient@example.test',kind,payload_json:JSON.stringify({circleName:'Music & Games',eventTitle:'Trial <Session>',...values})},options)}
 test('plain-text notifications include the actual status and HTML is escaped',()=>{
  for(const label of ['承認','見送り','キャンセル待ちから受付中']){
