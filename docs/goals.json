@@ -68,7 +68,9 @@
                 "T01",
                 "T02",
                 "T03",
-                "T04"
+                "T04",
+                "T26",
+                "T27"
               ]
             }
           ]
@@ -164,7 +166,9 @@
                 "T09",
                 "T10",
                 "T11",
-                "T12"
+                "T12",
+                "T25",
+                "T28"
               ]
             }
           ]
@@ -652,12 +656,76 @@
       "acceptance": "T22,T23の結果をレビュー。営業・公開拡大・契約は承認後",
       "owner": "agent",
       "contribution": "継続利益と他大学への再現性"
+    },
+    {
+      "id": "T25",
+      "level": 4,
+      "parent_id": "S3.M1.I1",
+      "strategy_id": "S3",
+      "title": "比較選択・違いの表示・スマホ比較表を改善",
+      "deadline": "2026-11-30",
+      "priority": "P1",
+      "status": "in_progress",
+      "approval_required": false,
+      "acceptance": "文字付き比較、選択一覧・解除、2〜4団体、差分表示をブラウザ検証",
+      "owner": "agent",
+      "contribution": "比較からイベント参加・公式窓口への接点を増やす"
+    },
+    {
+      "id": "T26",
+      "level": 4,
+      "parent_id": "S1.M1.I1",
+      "strategy_id": "S1",
+      "title": "イベント外部申込と公式SNSの役割・データ項目を設計",
+      "deadline": "2026-11-30",
+      "priority": "P0",
+      "status": "in_progress",
+      "approval_required": false,
+      "acceptance": "フォーム完了とクリックを区別し、日時・期限・定員・更新日と公式リンクを設計",
+      "owner": "agent",
+      "contribution": "比較からイベント参加・公式窓口への接点を増やす"
+    },
+    {
+      "id": "T27",
+      "level": 4,
+      "parent_id": "S1.M1.I1",
+      "strategy_id": "S1",
+      "title": "イベント別申込先とInstagram・LINEの登録導線を実装",
+      "deadline": "2026-11-30",
+      "priority": "P0",
+      "status": "blocked_dependency",
+      "approval_required": false,
+      "acceptance": "T26を確認後に合成データで登録・外部遷移を検証。公開承認は別",
+      "owner": "agent",
+      "contribution": "比較からイベント参加・公式窓口への接点を増やす"
+    },
+    {
+      "id": "T28",
+      "level": 4,
+      "parent_id": "S3.M1.I1",
+      "strategy_id": "S3",
+      "title": "外部申込方式に合わせて通知と成果KPIを再設計",
+      "deadline": "2026-11-30",
+      "priority": "P1",
+      "status": "in_progress",
+      "approval_required": false,
+      "acceptance": "通知対象の回答後に更新。フォーム遷移数を予約完了数としない",
+      "owner": "agent",
+      "contribution": "比較からイベント参加・公式窓口への接点を増やす"
     }
   ],
   "operating_policy": {
     "public_operator_name": "TS",
     "publish_personal_name": false,
     "publish_support_email": false,
-    "pilot_email_notifications": "planned_pending_sender_setup_and_send_approval"
+    "pilot_email_notifications": "priority under review; external-form outcomes unavailable without integration",
+    "domain_purchase": "paused_pending_product_direction",
+    "initial_product_direction": "proposal: compare circles, view events, register via external official forms, contact official SNS; in-app bookings on hold",
+    "event_notifications": [
+      "new-event",
+      "deadline-reminder",
+      "start-reminder"
+    ],
+    "notification_timing": "proposed: 24h before deadline/start; no actual delivery configured"
   }
 }
