@@ -14,11 +14,13 @@ async function waitFor(url,child){for(let i=0;i<80;i++){if(child.exitCode!==null
 
 test('public and admin API flow', async t=>{
  const dir=await mkdtemp(join(tmpdir(),'shinkanavi-test-')),port=await freePort(),token='test-only-setup-secret';
- const child=spawn(process.execPath,[join(projectRoot,'server.mjs')],{cwd:projectRoot,env:{...process.env,DB_PATH:join(dir,'app.sqlite'),ADMIN_SETUP_TOKEN:token,PORT:String(port),HOST:'127.0.0.1'},stdio:'ignore'});
+ const child=spawn(process.execPath,[join(projectRoot,'server.mjs')],{cwd:projectRoot,env:{...process.env,DB_PATH:join(dir,'app.sqlite'),ADMIN_SETUP_TOKEN:token,PUBLIC_OPERATOR_NAME:'<Test Operator>',PUBLIC_SUPPORT_EMAIL:'support@example.test',PORT:String(port),HOST:'127.0.0.1'},stdio:'ignore'});
  const base=`http://127.0.0.1:${port}`;
  t.after(async()=>{if(child.exitCode===null){child.kill();await new Promise(resolve=>child.once('exit',resolve))}await rm(dir,{recursive:true,force:true})});
  await waitFor(base+'/health',child);
  assert.deepEqual(await (await fetch(base+'/health')).json(),{ok:true});
+ const home=await(await fetch(base+'/')).text();assert.ok(home.includes('&lt;Test Operator&gt;'));assert.ok(home.includes('mailto:support@example.test'));assert.ok(home.includes('大学の公式サービスではありません'));assert.ok(!home.includes('{{OPERATOR_CONTACT}}'));assert.ok(!home.includes('<Test Operator>'));
+
  assert.equal((await fetch(base+'/api/admin/stats')).status,401);
  const setup=await fetch(base+'/api/admin/setup',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({token,email:'admin@example.test',password:'test-password-long-123'})});
  assert.equal(setup.status,201);
