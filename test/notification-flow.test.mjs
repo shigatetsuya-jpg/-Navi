@@ -17,9 +17,10 @@ test('confirmed addresses, expiry, resend, application capacity, isolation and m
  const db=new DatabaseSync(path);db.exec('PRAGMA busy_timeout=5000;PRAGMA foreign_keys=ON;CREATE TABLE schema_migrations(version INTEGER PRIMARY KEY)');
  for(const [i,file] of ['001-init.sql','002-accounts-events.sql','003-email-outbox.sql','004-email-verification.sql'].entries()){db.exec(await readFile(new URL('migrations/'+file,root),'utf8'));db.prepare('INSERT INTO schema_migrations VALUES(?)').run(i+1)}
  const account=db.prepare('INSERT INTO accounts(id,email,display_name,account_type,salt,password_hash,email_verified) VALUES(?,?,?,?,?,?,?)');
- for(const [id,email,role,verified] of [[1,'student@example.test','member',0],[2,'waiting@example.test','member',1],[3,'manager@example.test','organization',1],[4,'other@example.test','organization',0],[5,'retry@example.test','member',1]]){account.run(id,email,'Private Student Name',role,'salt','hash',verified);db.prepare('INSERT INTO account_sessions VALUES(?,?,?)').run(hash('session'+id),id,Date.now()+60000)}
+ for(const [id,email,role,verified] of [[1,'student@example.test','member',0],[2,'waiting@example.test','member',1],[3,'manager@example.test','organization',1],[4,'other@example.test','organization',0],[5,'retry@example.test','member',1],[6,'invalid@example.test','member',1]]){account.run(id,email,'Private Student Name',role,'salt','hash',verified);db.prepare('INSERT INTO account_sessions VALUES(?,?,?)').run(hash('session'+id),id,Date.now()+60000)}
  db.exec("INSERT INTO circles(id,name,university,published,verified,contact) VALUES(1,'Public Club','University',1,1,'internal@example.test'),(2,'Unverified Club','University',1,0,'hidden@example.test'),(3,'Hidden Club','University',0,1,'hidden@example.test');INSERT INTO circle_managers(circle_id,account_id) VALUES(1,3),(1,4);INSERT INTO events(id,circle_id,title,capacity,status) VALUES(1,1,'Trial',1,'open')");
  const queue=db.prepare('INSERT INTO email_outbox(recipient,kind,payload_json) VALUES(?,?,?)');
+ queue.run('invalid@example.test','application-status','{}');
  queue.run('retry@example.test','application-status','{"eventTitle":"Trial"}');
  queue.run('other@example.test','application-status','{"eventTitle":"Legacy queue"}');
  queue.run('other@example.test','email-verification',JSON.stringify({token:'e'.repeat(43),expiresAt:Date.now()-1}));
@@ -65,6 +66,7 @@ test('confirmed addresses, expiry, resend, application capacity, isolation and m
  assert.equal((await api(`/api/org/applications/${second.id}/decision`,3,{decision:'approve'})).status,200);
  await until(()=>db.prepare("SELECT count(*) n FROM email_outbox WHERE status IN ('pending','sending') AND recipient<>'retry@example.test'").get().n===0);
  const retry=db.prepare("SELECT * FROM email_outbox WHERE recipient='retry@example.test'").get();assert.equal(retry.status,'pending');assert.equal(retry.attempts,1);assert.ok(Date.parse(retry.next_attempt_at+'Z')>Date.now());
+ const invalid=db.prepare("SELECT * FROM email_outbox WHERE recipient='invalid@example.test'").get();assert.equal(invalid.status,'failed');assert.equal(invalid.attempts,1);assert.equal(invalid.payload_json,'{}');assert.equal(invalid.last_error,'Resend API 400');
  const mails=(await readFile(log,'utf8')).trim().split('\n').map(JSON.parse);
  assert.ok(mails.some(x=>x.mail.to[0]==='manager@example.test'));
  assert.ok(!mails.some(x=>x.mail.to[0]==='other@example.test'));
