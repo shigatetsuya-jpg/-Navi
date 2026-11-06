@@ -54,3 +54,13 @@ Render月$7.25にドメイン年$11.17を加えると、仮換算で月平均約
 
 RDAP：https://rdap.verisign.com/com/v1/domain/shinkan-navi.com 、https://rdap.verisign.com/com/v1/domain/shinkanavi.com 、https://rdap.verisign.com/net/v1/domain/shinkan-navi.net 。登録情報がないことだけでは購入可能性や最終価格を保証しない。販売側の検索・購入確認画面で確認する。
 Cloudflare公式の一般.com標準料金は初年度・更新とも年$11.17。1ドル158円の仮換算で約1,765円、税手数料等は別。候補そのものの注文価格は未確定。予約・購入は未実施。
+
+## 新名称のドメイン候補（2026年11月7日）
+正式名称ワセサークルナビに合わせ、Verisign RDAPで以下4件を照会。いずれも404で登録情報は見つからなかった。
+- wasecirclenavi.com：名前をそのまま表し、ハイフンなし。第一候補案。
+- wase-circle-navi.com：単語の区切りを読みやすくした代替案。
+- wase-circle.com：短いがサービス名のNavi部分がない候補。
+- wasecirclenavi.net：.com以外の代替案。
+
+登録情報404は購入可能の保証ではない。購入候補名を選んだ後に販売画面で取得可否・ドメイン固有の初年度と更新金額を確認する。Cloudflare公式の一般.comは初年度・更新とも年$11.17（1ドル158円の仮換算で約1,765円、税手数料別）。購入・アカウント作成・DNS変更なし。
+出典：https://rdap.verisign.com/com/v1/domain/wasecirclenavi.com 、https://rdap.verisign.com/com/v1/domain/wase-circle-navi.com 、https://rdap.verisign.com/com/v1/domain/wase-circle.com 、https://rdap.verisign.com/net/v1/domain/wasecirclenavi.net 、https://pricing.registrar.cloudflare.com/ 。

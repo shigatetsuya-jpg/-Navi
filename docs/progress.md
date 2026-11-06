@@ -66,3 +66,6 @@ Verisign RDAPで候補3件を確認。shinkan-navi.comとshinkan-navi.netは404�
 現行本番向けの名称変更だけをPR #5へ分離し、試用版の未反映機能と分けて反映。320px・390px・デスクトップで画面名とヘッダーの収まりを確認、ブラウザ例外なし。開発枝の全10テスト成功。
 
 名称変更はPR #5をマージし、Renderの9cb434bがliveになったことを確認。本番のトップ・登録・管理画面・マイページで新名称を確認し、health正常と公開APIの応答も確認。開発枝の3役ブラウザ検証も再実行して成功。ドメイン・料金・保存先・掲載条件の変更は行っていない。
+
+## 新名称でのドメイン選定
+wasecirclenavi.com、wase-circle-navi.com、wase-circle.com、wasecirclenavi.netの登録情報を調査し全てRDAP 404。第一候補案はwasecirclenavi.com。取得確約や購入固有価格の確認ではないため、名前の選定後に購入先の確認が必要。契約・設定変更は未実施。
