@@ -69,3 +69,6 @@ Verisign RDAPで候補3件を確認。shinkan-navi.comとshinkan-navi.netは404�
 
 ## 新名称でのドメイン選定
 wasecirclenavi.com、wase-circle-navi.com、wase-circle.com、wasecirclenavi.netの登録情報を調査し全てRDAP 404。第一候補案はwasecirclenavi.com。取得確約や購入固有価格の確認ではないため、名前の選定後に購入先の確認が必要。契約・設定変更は未実施。
+
+## ドメイン名選択と購入先の確認
+ユーザーはwasecirclenavi.comを第一候補として進めることを了承。Cloudflareの公開検索画面を実ブラウザで閲覧し、対象.comがBuy now・$11.17・更新$11.17/yearと表示されることを確認。購入・予約・個人情報送信なし。Porkbunは閲覧拒否のため調査を打ち切り。購入条件と取得後のRender・メールDNSの手順をdomain-setup.mdに記録。購入は明示承認待ち。
