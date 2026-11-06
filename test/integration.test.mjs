@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { DatabaseSync } from 'node:sqlite';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:net';
@@ -48,5 +49,15 @@ test('public and admin API flow', async t=>{
  const exported=await fetch(base+'/api/admin/export',{headers:auth});assert.equal(exported.status,200);assert.match(await exported.text(),/^name,university,campus/);
  assert.equal((await fetch(base+'/style.css')).status,200);assert.equal((await fetch(base+'/admin.html')).status,200);
  const appJs=await (await fetch(base+'/app.js')).text(),adminJs=await (await fetch(base+'/admin.js')).text();for(const campus of ['早稲田','西早稲田','所沢','戸山']){assert.ok(appJs.includes(campus));assert.ok(adminJs.includes(campus))}assert.ok(adminJs.includes("university:'早稲田大学'"));
+ const statsDb=new DatabaseSync(join(dir,'app.sqlite'));statsDb.exec('PRAGMA busy_timeout=5000');
+ try{
+ statsDb.exec(`INSERT INTO accounts(id,email,display_name,account_type,salt,password_hash) VALUES(1,'metric-student@example.test','Test','member','s','h'),(2,'metric-org@example.test','Test','organization','s','h');
+ INSERT INTO circle_managers(circle_id,account_id) VALUES(${id},2);
+ INSERT INTO events(id,circle_id,title,capacity,status,starts_at) VALUES(1,${id},'Future',10,'open','2099-04-01T00:00:00Z'),(2,${id},'Past',10,'open','2000-01-01T00:00:00Z');
+ INSERT INTO applications(event_id,member_id,status) VALUES(1,1,'approved'),(2,1,'cancelled');`);
+ const metrics=await(await fetch(base+'/api/admin/stats',{headers:auth})).json();
+ assert.equal(metrics.verified_public,1);assert.equal(metrics.members,1);assert.equal(metrics.organizations,1);assert.equal(metrics.active_organizations_30d,1);assert.equal(metrics.applicants_30d,1);assert.equal(metrics.applications_30d,2);assert.equal(metrics.approved_applications_30d,1);assert.equal(metrics.open_events,1);
+ assert.ok(!JSON.stringify(metrics).includes('@'));assert.ok(!Number.isNaN(Date.parse(metrics.measured_at)));
+ }finally{statsDb.close()}
  const logout=await fetch(base+'/api/admin/logout',{method:'POST',headers:auth});assert.equal(logout.status,200);assert.equal((await fetch(base+'/api/admin/stats',{headers:auth})).status,401);
 });

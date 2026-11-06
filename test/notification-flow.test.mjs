@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { spawn } from 'node:child_process';
@@ -36,15 +37,21 @@ test('confirmed addresses, expiry, resend, application capacity, isolation and m
  assert.equal((await api('/api/auth/email-verification/confirm',null,{token:'a'.repeat(43)})).status,400);
  db.prepare('UPDATE accounts SET email_verified=0 WHERE id=1').run();
  assert.equal((await api('/api/auth/email-verification',1,{})).status,200);
- const old=JSON.parse(db.prepare("SELECT payload_json FROM email_outbox WHERE recipient='student@example.test' AND kind='email-verification' ORDER BY id DESC LIMIT 1").get().payload_json).token;
+ function latestToken(){
+ const row=db.prepare("SELECT id,payload_json FROM email_outbox WHERE recipient='student@example.test' AND kind='email-verification' ORDER BY id DESC LIMIT 1").get();
+ const token=JSON.parse(row.payload_json).token;if(token)return token;
+ const mail=readFileSync(log,'utf8').trim().split('\n').map(JSON.parse).find(x=>x.key===`shinkanavi-outbox-${row.id}`);
+ return mail.mail.text.match(/verify=([\w-]+)/)[1];
+ }
+ const old=latestToken();
  assert.equal((await api('/api/auth/email-verification',1,{})).status,200);
  assert.equal((await api('/api/auth/email-verification/confirm',null,{token:old})).status,400);
- const latest=JSON.parse(db.prepare("SELECT payload_json FROM email_outbox WHERE recipient='student@example.test' AND kind='email-verification' ORDER BY id DESC LIMIT 1").get().payload_json).token;
+ const latest=latestToken();
  db.prepare('UPDATE email_verifications SET expires_at=0 WHERE account_id=1').run();
  assert.equal((await api('/api/auth/email-verification/confirm',null,{token:latest})).status,400);
  assert.equal((await api('/api/auth/email-verification',1,{})).status,200);
  assert.equal((await api('/api/auth/email-verification',1,{})).status,429);
- const finalToken=JSON.parse(db.prepare("SELECT payload_json FROM email_outbox WHERE recipient='student@example.test' AND kind='email-verification' ORDER BY id DESC LIMIT 1").get().payload_json).token;
+ const finalToken=latestToken();
  assert.equal((await api('/api/auth/email-verification/confirm',null,{token:finalToken})).status,200);
  const first=await api('/api/events/1/applications',1,{message:'Private application message'});assert.equal(first.status,201);const application=await first.json();assert.equal(application.status,'pending');
  assert.equal((await api('/api/events/1/applications',1,{})).status,409);

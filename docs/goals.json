@@ -1,0 +1,657 @@
+{
+  "version": 1,
+  "updated_at": "2026-11-07",
+  "timezone": "Asia/Tokyo",
+  "goal": {
+    "id": "G0",
+    "level": 0,
+    "title": "2027年4月の新歓シーズンまでに、新歓ナビを大学新入生とサークル・部活動をつなぐ実用的なWebサービスとして完成・普及させる。一般ユーザー向けサイトと管理者サイトを安定運用し、掲載サークル数と実際の利用者数を増加させる。サークル向け有料機能や広告掲載などの収益モデルを検証し、2027年中に初回売上を獲得する。最終的には、継続的な収益と利益を生み出し、他大学への展開も可能な事業へ成長させる。",
+    "launch_deadline": "2027-04-01",
+    "first_revenue_deadline": "2027-12-31",
+    "long_term_horizon": "2028年以降"
+  },
+  "approval_required": [
+    "外部への営業連絡",
+    "広告出稿",
+    "課金",
+    "有料契約",
+    "個人情報の外部送信",
+    "公開範囲の変更"
+  ],
+  "baseline": {
+    "verified_public_circles": 0,
+    "members": null,
+    "organizations": null,
+    "applicants_30d": null,
+    "revenue_jpy": null,
+    "visitors": null
+  },
+  "strategies": [
+    {
+      "id": "S1",
+      "level": 1,
+      "parent_id": "G0",
+      "title": "サービスの完成と品質確保",
+      "priority": "P0",
+      "deadline": "2027-03-15",
+      "kpis": [
+        {
+          "id": "critical_defects",
+          "target": 0,
+          "basis": "品質ゲート。現状の未分類不具合数は不明"
+        },
+        {
+          "id": "core_flow_pass_rate",
+          "target": 1,
+          "basis": "必須シナリオ100%合格を品質ゲートとする"
+        },
+        {
+          "id": "uptime_target",
+          "target": 0.995,
+          "basis": "仮説：2027年3〜4月の月次稼働率99.5%。現在の実績は未計測"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "S1.M1",
+          "level": 2,
+          "parent_id": "S1",
+          "deadline": "2027-03-15",
+          "acceptance": "学生の検索→登録→申込→取消、団体の受付→判断、管理者の確認→公開が動く。認証分離、バックアップ復元、問い合わせ・個人情報対応が確認済み。重大な既知不具合0件。",
+          "initiatives": [
+            {
+              "id": "S1.M1.I1",
+              "level": 3,
+              "parent_id": "S1.M1",
+              "title": "必須フローの完成、データ保全と運営基盤の整備",
+              "tasks": [
+                "T01",
+                "T02",
+                "T03",
+                "T04"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "level": 1,
+      "parent_id": "G0",
+      "title": "サークル情報の充実",
+      "priority": "P0",
+      "deadline": "2027-03-15",
+      "kpis": [
+        {
+          "id": "verified_public_circles",
+          "target": 30,
+          "basis": "仮説：3月15日30団体。現在0件。1月末の獲得実績で再設定"
+        },
+        {
+          "id": "essential_field_completeness",
+          "target": 0.9,
+          "basis": "仮説：必須情報充足率90%。初期掲載後に実測"
+        },
+        {
+          "id": "freshness_90d",
+          "target": 0.9,
+          "basis": "仮説：確認から90日以内の情報90%"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "S2.M1",
+          "level": 2,
+          "parent_id": "S2",
+          "deadline": "2027-03-15",
+          "acceptance": "掲載許諾と確認根拠があり、活動内容・規模・費用・時間・連絡経路・更新日がわかる情報を揃える。",
+          "initiatives": [
+            {
+              "id": "S2.M1.I1",
+              "level": 3,
+              "parent_id": "S2.M1",
+              "title": "掲載フォーマット・情報確認基準と更新運用の整備",
+              "tasks": [
+                "T05",
+                "T06",
+                "T07",
+                "T08"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "level": 1,
+      "parent_id": "G0",
+      "title": "大学新入生への普及",
+      "priority": "P1",
+      "deadline": "2027-04-30",
+      "kpis": [
+        {
+          "id": "applicants_30d",
+          "target": 50,
+          "basis": "仮説：4月に申込した個人数50。現状不明"
+        },
+        {
+          "id": "members",
+          "target": 200,
+          "basis": "仮説：4月末個人登録200。訪問者や実利用者と同一視しない"
+        },
+        {
+          "id": "visitor_baseline",
+          "target": null,
+          "basis": "未計測。必要な同意・承認と計測方法を決めてから目標を置く"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "S3.M1",
+          "level": 2,
+          "parent_id": "S3",
+          "deadline": "2027-04-30",
+          "acceptance": "新入生が検索から実際の申込まで利用し、流入と利用を区別して効果を測れる。",
+          "initiatives": [
+            {
+              "id": "S3.M1.I1",
+              "level": 3,
+              "parent_id": "S3.M1",
+              "title": "空きコマ検索の価値を伝える導線と自然流入の検証",
+              "tasks": [
+                "T09",
+                "T10",
+                "T11",
+                "T12"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "level": 1,
+      "parent_id": "G0",
+      "title": "サークル運営者の獲得",
+      "priority": "P1",
+      "deadline": "2027-03-15",
+      "kpis": [
+        {
+          "id": "active_organizations_30d",
+          "target": 10,
+          "basis": "仮説：3月15日10団体アカウントが直近30日にイベントまたは申込を更新"
+        },
+        {
+          "id": "pilot_organizations",
+          "target": 5,
+          "basis": "仮説：1月末5団体の協力。現在不明"
+        },
+        {
+          "id": "response_within_48h",
+          "target": 0.8,
+          "basis": "仮説：申込判断48時間以内80%。現状履歴計測が不足"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "S4.M1",
+          "level": 2,
+          "parent_id": "S4",
+          "deadline": "2027-03-15",
+          "acceptance": "掲載だけでなく、団体自身がイベントを準備し申込に対応する。",
+          "initiatives": [
+            {
+              "id": "S4.M1.I1",
+              "level": 3,
+              "parent_id": "S4.M1",
+              "title": "団体登録から初回イベントと申込対応までの導入負担を減らす",
+              "tasks": [
+                "T13",
+                "T14",
+                "T15",
+                "T16"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "level": 1,
+      "parent_id": "G0",
+      "title": "収益モデルの検証と初回売上の獲得",
+      "priority": "P2",
+      "deadline": "2027-12-31",
+      "kpis": [
+        {
+          "id": "first_paid_sale",
+          "target": 1,
+          "basis": "ユーザー指定：2027年中に初回売上。件数1は達成条件"
+        },
+        {
+          "id": "pricing_interviews",
+          "target": 5,
+          "basis": "仮説：6月末まで5団体の支払意向を確認。連絡は承認後"
+        },
+        {
+          "id": "paid_customers",
+          "target": 3,
+          "basis": "仮説：年末3顧客。実需確認後に再設定。価格と売上額は未確定"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "S5.M1",
+          "level": 2,
+          "parent_id": "S5",
+          "deadline": "2027-12-31",
+          "acceptance": "料金を払う理由・支払主体・原価を確認し、承認を得た契約に基づく初回入金を記録する。",
+          "initiatives": [
+            {
+              "id": "S5.M1.I1",
+              "level": 3,
+              "parent_id": "S5.M1",
+              "title": "春の利用実績から有料機能と広告枠の価値を検証",
+              "tasks": [
+                "T17",
+                "T18",
+                "T19",
+                "T20"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "level": 1,
+      "parent_id": "G0",
+      "title": "継続的な収益化と事業拡大",
+      "priority": "P3",
+      "deadline": "2027-12-31",
+      "kpis": [
+        {
+          "id": "positive_monthly_operating_profit_months",
+          "target": 3,
+          "basis": "仮説：3か月連続の営業キャッシュ利益黒字。2028年3月に判定"
+        },
+        {
+          "id": "renewal_rate",
+          "target": null,
+          "basis": "顧客母数不足のため未設定。初回契約後に期間と分母を定義"
+        },
+        {
+          "id": "expansion_readiness",
+          "target": 1,
+          "basis": "仮説：年末までに他大学1校の展開判断資料を作成。公開展開は未承認"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "S6.M1",
+          "level": 2,
+          "parent_id": "S6",
+          "deadline": "2027-12-31",
+          "acceptance": "継続利用と粗利益を測れる運営体制を作り、早稲田での検証後に他大学の再現性を評価する。",
+          "initiatives": [
+            {
+              "id": "S6.M1.I1",
+              "level": 3,
+              "parent_id": "S6.M1",
+              "title": "単位採算・継続利用・大学別運営の再現性を検証",
+              "tasks": [
+                "T21",
+                "T22",
+                "T23",
+                "T24"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T01",
+      "level": 4,
+      "parent_id": "S1.M1.I1",
+      "strategy_id": "S1",
+      "title": "目標階層・実績・承認境界をファイルに保存",
+      "deadline": "2026-11-07",
+      "priority": "P0",
+      "status": "done",
+      "approval_required": false,
+      "acceptance": "GOALS.md、docs/goals.json、docs/tasks.csvを作成・関連IDを検査",
+      "owner": "agent",
+      "contribution": "安心して使える基盤と離脱防止"
+    },
+    {
+      "id": "T02",
+      "level": 4,
+      "parent_id": "S1.M1.I1",
+      "strategy_id": "S1",
+      "title": "既存通知修復と自動バックアップを統合検証",
+      "deadline": "2026-11-30",
+      "priority": "P0",
+      "status": "in_progress",
+      "approval_required": false,
+      "acceptance": "バックアップ復元、本人確認、再送、宛先、権限、待機列のテスト。実メールは承認後",
+      "owner": "agent",
+      "contribution": "安心して使える基盤と離脱防止"
+    },
+    {
+      "id": "T03",
+      "level": 4,
+      "parent_id": "S1.M1.I1",
+      "strategy_id": "S1",
+      "title": "問い合わせ先・規約・プライバシー・削除手順を準備",
+      "deadline": "2026-12-15",
+      "priority": "P0",
+      "status": "todo",
+      "approval_required": false,
+      "acceptance": "保存データと用途を棚卸しし文案作成。連絡先は本人の指定が必要",
+      "owner": "agent",
+      "contribution": "安心して使える基盤と離脱防止"
+    },
+    {
+      "id": "T04",
+      "level": 4,
+      "parent_id": "S1.M1.I1",
+      "strategy_id": "S1",
+      "title": "試用環境・本番復元・申込同時実行・稼働監視を検証",
+      "deadline": "2027-02-28",
+      "priority": "P0",
+      "status": "todo",
+      "approval_required": false,
+      "acceptance": "定員超過・二重申込・漏えい0、復元実施記録。新規公開や外部サービス利用は承認後",
+      "owner": "agent",
+      "contribution": "安心して使える基盤と離脱防止"
+    },
+    {
+      "id": "T05",
+      "level": 4,
+      "parent_id": "S2.M1.I1",
+      "strategy_id": "S2",
+      "title": "掲載項目・許諾・情報確認チェックシートを作成",
+      "deadline": "2026-11-30",
+      "priority": "P0",
+      "status": "todo",
+      "approval_required": false,
+      "acceptance": "必須項目、情報源、掲載同意、確認者・確認日、更新依頼方法を定義",
+      "owner": "agent",
+      "contribution": "検索価値と団体接点の増加"
+    },
+    {
+      "id": "T06",
+      "level": 4,
+      "parent_id": "S2.M1.I1",
+      "strategy_id": "S2",
+      "title": "候補団体リストと情報源・更新日を整理",
+      "deadline": "2026-12-15",
+      "priority": "P0",
+      "status": "todo",
+      "approval_required": false,
+      "acceptance": "公開情報の調査に限定。個人連絡先の収集や無断掲載はしない",
+      "owner": "agent",
+      "contribution": "検索価値と団体接点の増加"
+    },
+    {
+      "id": "T07",
+      "level": 4,
+      "parent_id": "S2.M1.I1",
+      "strategy_id": "S2",
+      "title": "初期掲載10団体を獲得・確認する",
+      "deadline": "2027-01-31",
+      "priority": "P0",
+      "status": "blocked_approval",
+      "approval_required": true,
+      "acceptance": "仮説10団体。連絡文案と掲載候補をレビュー後、営業連絡・公開を承認してもらう",
+      "owner": "user_and_agent",
+      "contribution": "検索価値と団体接点の増加"
+    },
+    {
+      "id": "T08",
+      "level": 4,
+      "parent_id": "S2.M1.I1",
+      "strategy_id": "S2",
+      "title": "掲載を30団体へ拡大し不足情報を更新",
+      "deadline": "2027-03-15",
+      "priority": "P0",
+      "status": "blocked_dependency",
+      "approval_required": true,
+      "acceptance": "T07と掲載許可が前提。週次で公開数と不足項目を確認",
+      "owner": "user_and_agent",
+      "contribution": "検索価値と団体接点の増加"
+    },
+    {
+      "id": "T09",
+      "level": 4,
+      "parent_id": "S3.M1.I1",
+      "strategy_id": "S3",
+      "title": "学生・団体・申込数の管理者向け集計を実装",
+      "deadline": "2026-11-14",
+      "priority": "P1",
+      "status": "in_progress",
+      "approval_required": false,
+      "acceptance": "管理者認証必須の集計を追加。実装・自動テスト済み、本番反映待ち",
+      "owner": "agent",
+      "contribution": "学生利用と申込の増加"
+    },
+    {
+      "id": "T10",
+      "level": 4,
+      "parent_id": "S3.M1.I1",
+      "strategy_id": "S3",
+      "title": "Search Consoleと検索導線・空検索表示を点検",
+      "deadline": "2026-12-15",
+      "priority": "P1",
+      "status": "todo",
+      "approval_required": false,
+      "acceptance": "所有権・サイトマップ・検索登録を確認。掲載0件の案内と条件の見直し導線",
+      "owner": "agent",
+      "contribution": "学生利用と申込の増加"
+    },
+    {
+      "id": "T11",
+      "level": 4,
+      "parent_id": "S3.M1.I1",
+      "strategy_id": "S3",
+      "title": "学生向け説明・紹介素材・試用質問を作成",
+      "deadline": "2027-01-31",
+      "priority": "P1",
+      "status": "todo",
+      "approval_required": false,
+      "acceptance": "利用場面と価値、チラシ/SNS文案、試用で測る項目を準備",
+      "owner": "agent",
+      "contribution": "学生利用と申込の増加"
+    },
+    {
+      "id": "T12",
+      "level": 4,
+      "parent_id": "S3.M1.I1",
+      "strategy_id": "S3",
+      "title": "承認した経路で試用・紹介を実施し週次改善",
+      "deadline": "2027-04-30",
+      "priority": "P1",
+      "status": "blocked_approval",
+      "approval_required": true,
+      "acceptance": "外部連絡・投稿・広告は承認後。仮説目標を実績で見直す",
+      "owner": "user_and_agent",
+      "contribution": "学生利用と申込の増加"
+    },
+    {
+      "id": "T13",
+      "level": 4,
+      "parent_id": "S4.M1.I1",
+      "strategy_id": "S4",
+      "title": "団体向け導入手順・FAQと掲載募集文案を作る",
+      "deadline": "2026-12-15",
+      "priority": "P1",
+      "status": "todo",
+      "approval_required": false,
+      "acceptance": "登録、運営確認、体験会作成、申込判断の短い手順",
+      "owner": "agent",
+      "contribution": "継続的なイベント供給と団体定着"
+    },
+    {
+      "id": "T14",
+      "level": 4,
+      "parent_id": "S4.M1.I1",
+      "strategy_id": "S4",
+      "title": "協力候補と承認用の営業計画を準備",
+      "deadline": "2026-12-31",
+      "priority": "P1",
+      "status": "todo",
+      "approval_required": false,
+      "acceptance": "誰に何を提案するか、連絡先の扱い、送信文、対象数を明示",
+      "owner": "agent",
+      "contribution": "継続的なイベント供給と団体定着"
+    },
+    {
+      "id": "T15",
+      "level": 4,
+      "parent_id": "S4.M1.I1",
+      "strategy_id": "S4",
+      "title": "協力5団体で登録・イベント・申込対応を試す",
+      "deadline": "2027-01-31",
+      "priority": "P1",
+      "status": "blocked_approval",
+      "approval_required": true,
+      "acceptance": "外部連絡・試用データ送信・掲載は承認後。詰まる操作を記録",
+      "owner": "user_and_agent",
+      "contribution": "継続的なイベント供給と団体定着"
+    },
+    {
+      "id": "T16",
+      "level": 4,
+      "parent_id": "S4.M1.I1",
+      "strategy_id": "S4",
+      "title": "団体の更新・申込対応の継続率を分析して改善",
+      "deadline": "2027-03-15",
+      "priority": "P1",
+      "status": "blocked_dependency",
+      "approval_required": false,
+      "acceptance": "T15と集計が前提。初期目標を実態で再設定",
+      "owner": "agent",
+      "contribution": "継続的なイベント供給と団体定着"
+    },
+    {
+      "id": "T17",
+      "level": 4,
+      "parent_id": "S5.M1.I1",
+      "strategy_id": "S5",
+      "title": "有料機能と広告の候補・費用・課金単位を比較",
+      "deadline": "2027-01-31",
+      "priority": "P2",
+      "status": "todo",
+      "approval_required": false,
+      "acceptance": "団体向け運営支援/効果集計、明示された広告枠などを比較。決済は作らない",
+      "owner": "agent",
+      "contribution": "支払意向の実証と初回入金"
+    },
+    {
+      "id": "T18",
+      "level": 4,
+      "parent_id": "S5.M1.I1",
+      "strategy_id": "S5",
+      "title": "春の利用実績と支払意向を検証",
+      "deadline": "2027-06-30",
+      "priority": "P2",
+      "status": "blocked_approval",
+      "approval_required": true,
+      "acceptance": "有料調査の営業連絡・個人情報の送信は承認後。反応で料金仮説を決める",
+      "owner": "user_and_agent",
+      "contribution": "支払意向の実証と初回入金"
+    },
+    {
+      "id": "T19",
+      "level": 4,
+      "parent_id": "S5.M1.I1",
+      "strategy_id": "S5",
+      "title": "料金・契約・請求・返金・収支の運用案を作る",
+      "deadline": "2027-08-31",
+      "priority": "P2",
+      "status": "todo",
+      "approval_required": false,
+      "acceptance": "T18の知見でプランを絞る。課金は別途明示承認",
+      "owner": "agent",
+      "contribution": "支払意向の実証と初回入金"
+    },
+    {
+      "id": "T20",
+      "level": 4,
+      "parent_id": "S5.M1.I1",
+      "strategy_id": "S5",
+      "title": "承認済みの有料試用を実施し初回入金を得る",
+      "deadline": "2027-12-31",
+      "priority": "P2",
+      "status": "blocked_approval",
+      "approval_required": true,
+      "acceptance": "営業、契約、課金を個別承認。請求ではなく入金で達成を判定",
+      "owner": "user_and_agent",
+      "contribution": "支払意向の実証と初回入金"
+    },
+    {
+      "id": "T21",
+      "level": 4,
+      "parent_id": "S6.M1.I1",
+      "strategy_id": "S6",
+      "title": "月次の収支・作業時間・継続率の台帳を作る",
+      "deadline": "2027-05-31",
+      "priority": "P3",
+      "status": "todo",
+      "approval_required": false,
+      "acceptance": "売上、変動費、固定費、手数料、運営工数を区別。原価に作業時間も併記",
+      "owner": "agent",
+      "contribution": "継続利益と他大学への再現性"
+    },
+    {
+      "id": "T22",
+      "level": 4,
+      "parent_id": "S6.M1.I1",
+      "strategy_id": "S6",
+      "title": "有料顧客の継続・解約理由と利益を評価",
+      "deadline": "2027-12-31",
+      "priority": "P3",
+      "status": "blocked_dependency",
+      "approval_required": false,
+      "acceptance": "T20の実入金が前提。売上と利益を区別する",
+      "owner": "agent",
+      "contribution": "継続利益と他大学への再現性"
+    },
+    {
+      "id": "T23",
+      "level": 4,
+      "parent_id": "S6.M1.I1",
+      "strategy_id": "S6",
+      "title": "大学別データ・権限・獲得方法の展開設計",
+      "deadline": "2027-10-31",
+      "priority": "P3",
+      "status": "todo",
+      "approval_required": false,
+      "acceptance": "大学名自由入力の存在と実際の複数大学対応を区別し、認証・検索・運営範囲を点検",
+      "owner": "agent",
+      "contribution": "継続利益と他大学への再現性"
+    },
+    {
+      "id": "T24",
+      "level": 4,
+      "parent_id": "S6.M1.I1",
+      "strategy_id": "S6",
+      "title": "他大学1校の候補評価と展開判断を行う",
+      "deadline": "2027-12-31",
+      "priority": "P3",
+      "status": "blocked_dependency",
+      "approval_required": false,
+      "acceptance": "T22,T23の結果をレビュー。営業・公開拡大・契約は承認後",
+      "owner": "agent",
+      "contribution": "継続利益と他大学への再現性"
+    }
+  ]
+}
