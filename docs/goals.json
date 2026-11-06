@@ -707,7 +707,7 @@
       "title": "外部申込方式に合わせて通知と成果KPIを再設計",
       "deadline": "2026-11-30",
       "priority": "P1",
-      "status": "blocked_dependency",
+      "status": "in_progress",
       "approval_required": false,
       "acceptance": "通知対象の回答後に更新。フォーム遷移数を予約完了数としない",
       "owner": "agent",
@@ -720,6 +720,12 @@
     "publish_support_email": false,
     "pilot_email_notifications": "priority under review; external-form outcomes unavailable without integration",
     "domain_purchase": "paused_pending_product_direction",
-    "initial_product_direction": "proposal: compare circles, view events, register via external official forms, contact official SNS; in-app bookings on hold"
+    "initial_product_direction": "proposal: compare circles, view events, register via external official forms, contact official SNS; in-app bookings on hold",
+    "event_notifications": [
+      "new-event",
+      "deadline-reminder",
+      "start-reminder"
+    ],
+    "notification_timing": "proposed: 24h before deadline/start; no actual delivery configured"
   }
 }
