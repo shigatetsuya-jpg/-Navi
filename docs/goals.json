@@ -653,5 +653,11 @@
       "owner": "agent",
       "contribution": "継続利益と他大学への再現性"
     }
-  ]
+  ],
+  "operating_policy": {
+    "public_operator_name": "TS",
+    "publish_personal_name": false,
+    "publish_support_email": false,
+    "pilot_email_notifications": "planned_pending_sender_setup_and_send_approval"
+  }
 }

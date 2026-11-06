@@ -33,7 +33,7 @@ const htmlEscape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 function operatorContactHtml(){
  const name=clean(process.env.PUBLIC_OPERATOR_NAME,100),email=clean(process.env.PUBLIC_SUPPORT_EMAIL,254);
  const validEmail=/^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email);
- return (name?'<span>作成・運営：'+htmlEscape(name)+'（個人運営）</span><span>大学の公式サービスではありません。</span>':'')+(validEmail?'<a href="mailto:'+htmlEscape(email)+'">お問い合わせ：'+htmlEscape(email)+'</a>':'<span>お問い合わせ先は未設定</span>');
+ return (name?'<span>作成・運営：'+htmlEscape(name)+'（個人運営）</span><span>大学の公式サービスではありません。</span>':'')+(validEmail?'<a href="mailto:'+htmlEscape(email)+'">お問い合わせ：'+htmlEscape(email)+'</a>':'<span>お問い合わせ窓口は準備中</span>');
 }
 function siteOrigin(req){for(const candidate of [process.env.PUBLIC_SITE_URL,process.env.RENDER_EXTERNAL_URL])if(candidate){try{const u=new URL(candidate);if(u.protocol==='https:'&&!u.username&&!u.password)return u.origin;}catch{}}if(process.env.RENDER_EXTERNAL_HOSTNAME&&/^[a-z0-9.-]+$/i.test(process.env.RENDER_EXTERNAL_HOSTNAME))return 'https://'+process.env.RENDER_EXTERNAL_HOSTNAME;const host=String(req.headers.host||'localhost:3000');return /^[a-z0-9.-]+(?::\d{1,5})?$/i.test(host)?`http://${host}`:'http://localhost:3000';}
 const safeEqual=(a,b)=>{const left=Buffer.from(String(a??'')),right=Buffer.from(String(b??''));return left.length===right.length&&timingSafeEqual(left,right)};
