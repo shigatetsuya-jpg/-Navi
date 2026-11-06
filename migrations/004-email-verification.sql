@@ -1,5 +1,4 @@
 -- Existing accounts must confirm ownership before receiving application emails.
-BEGIN IMMEDIATE;
 ALTER TABLE accounts ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0 CHECK(email_verified IN (0,1));
 CREATE TABLE email_verifications(
  account_id INTEGER PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
@@ -25,4 +24,3 @@ CREATE TABLE email_outbox(
 INSERT INTO email_outbox SELECT * FROM email_outbox_v3;
 DROP TABLE email_outbox_v3;
 CREATE INDEX idx_email_outbox_ready ON email_outbox(status,next_attempt_at,id);
-COMMIT;
