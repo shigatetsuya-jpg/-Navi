@@ -18,3 +18,8 @@ services:
         value: /opt/render/project/src/data/shinkanavi.sqlite
       - key: ADMIN_SETUP_TOKEN
         sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+
