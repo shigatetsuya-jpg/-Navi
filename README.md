@@ -118,3 +118,7 @@ obots.txt ではページの巡回を遮らず、検索結果への登録だけ�
 ## 会員・団体管理の公開準備
 
 [20項目の不足と修正結果](docs/production-readiness-audit.md)と[TSの確認事項](docs/legal-review-checklist.md)を参照。確認メールが未設定の場合も、本登録を省略して会員機能を使えるようにはしません。実メール送信は送信元設定・承認・到達確認後です。
+
+## イベント通知
+
+[仕様と公開条件](docs/event-notifications.md)。`/notifications.html`から新着・開催前・締切前の通知を個別に設定・停止できます。メール未設定でも希望を保存できますが配信はしません。ブラウザ検証は`node test/browser/event-notifications.mjs`。

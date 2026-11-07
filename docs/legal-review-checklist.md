@@ -15,3 +15,5 @@
 - CSRFのOrigin/Fetch Metadata/JSONチェックとSameSite Cookieの前提、単一プロセス内の試行制限（再起動でリセット）、本番バックアップ・復元・監視・鍵管理を確認。複数インスタンスにする前に制限を共有ストアへ移す。
 
 参照：[個人情報保護委員会・法令ガイドライン](https://www.ppc.go.jp/personalinfo/legal/)、[通則編](https://www.ppc.go.jp/personalinfo/legal/guidelines_tsusoku/)。2026年11月7日に確認。個別の法的判断が必要な場合は専門家に確認する。
+
+- イベント通知は独立した初期オフの希望設定。通知の種類・設定日時・同意版・重複防止記録の保持期間も決める。退会で連動削除し、通知停止だけでは重複防止記録を残す。

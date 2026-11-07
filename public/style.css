@@ -26,3 +26,5 @@
 
 body.has-comparison{padding-bottom:170px}@media(max-width:600px){body.has-comparison{padding-bottom:220px}}
 input[type=checkbox]{width:auto!important;height:auto!important}.admin-form label:has(input[type=checkbox]){display:block}.admin-form textarea{min-height:80px}footer nav{display:flex;flex-wrap:wrap;gap:8px}.account-page p{line-height:1.8}
+
+#notification-settings label:has(input[type="checkbox"]){font-size:14px;line-height:1.7}#active-notifications .application-card p{font-size:14px;line-height:1.7}

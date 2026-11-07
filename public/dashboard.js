@@ -19,6 +19,6 @@ function renderEmailStatus(){
  $('#email-status-panel').classList.remove('hidden');
  const needsVerification=account.email_verification_required&&!account.email_verified;
  $('#resend-verification').classList.toggle('hidden',!needsVerification);
- $('#email-status-copy').textContent=!account.email_verification_required?'メール通知は現在準備中です。申込状況はこの画面で確認してください。':needsVerification?'登録メールアドレスが未確認です。確認メールのリンクから確認してください。確認前は申込できず、申込に関するメール通知も受け取れません。':'メールアドレスは確認済みです。申込に関する通知は登録メール宛てに送ります。最新の状況はこの画面でも確認できます。';
+ $('#email-status-copy').textContent=!account.email_verification_required?'メール通知は現在準備中です。申込状況はこの画面で確認してください。':needsVerification?'登録メールアドレスが未確認です。確認メールのリンクから確認してください。確認前は申込できず、申込に関するメール通知も受け取れません。':(account.email_delivery_available?'メールアドレスは確認済みです。申込に関する通知を受け取れます。イベント通知は別途、希望するものを設定してください。':'メールアドレスは確認済みです。メール送信は準備中です。イベント通知の希望は設定ページで保存できます。');
 }
 $('#resend-verification').onclick=async()=>{const button=$('#resend-verification');button.disabled=true;try{const result=await api('/api/auth/email-verification',{method:'POST',body:'{}'});notice(result.message)}catch(error){notice(error.message)}finally{button.disabled=false}};

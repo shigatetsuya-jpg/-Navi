@@ -1,7 +1,7 @@
 // Child-process test transport: never contacts Resend or any external host.
 import { appendFileSync } from 'node:fs';
 const interval=globalThis.setInterval;
-globalThis.setInterval=(fn,ms,...args)=>interval(fn,ms===15000?25:ms,...args);
+globalThis.setInterval=(fn,ms,...args)=>interval(fn,[15000,60000].includes(ms)?25:ms,...args);
 globalThis.fetch=async(url,options)=>{
  if(String(url)!=='https://api.resend.com/emails')throw Error('Unexpected external request');
  const mail=JSON.parse(options.body);
