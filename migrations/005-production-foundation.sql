@@ -1,0 +1,14 @@
+ALTER TABLE accounts ADD COLUMN terms_version TEXT;
+ALTER TABLE accounts ADD COLUMN privacy_version TEXT;
+ALTER TABLE accounts ADD COLUMN consented_at TEXT;
+CREATE TABLE password_resets(account_id INTEGER PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,token_hash TEXT NOT NULL UNIQUE,expires_at INTEGER NOT NULL);
+CREATE TABLE favorites(account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,circle_id INTEGER NOT NULL REFERENCES circles(id) ON DELETE CASCADE,PRIMARY KEY(account_id,circle_id));
+CREATE TABLE circle_access_requests(id INTEGER PRIMARY KEY,circle_id INTEGER NOT NULL REFERENCES circles(id) ON DELETE CASCADE,account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,reason TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','approved','rejected')),created_at TEXT NOT NULL DEFAULT (datetime('now')),UNIQUE(circle_id,account_id));
+CREATE TABLE support_requests(id INTEGER PRIMARY KEY,account_id INTEGER REFERENCES accounts(id) ON DELETE SET NULL,circle_id INTEGER REFERENCES circles(id) ON DELETE SET NULL,kind TEXT NOT NULL CHECK(kind IN ('inquiry','correction','deletion')),reply_email TEXT NOT NULL,message TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','closed')),created_at TEXT NOT NULL DEFAULT (datetime('now')));
+CREATE TABLE consent_records(id INTEGER PRIMARY KEY,account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,purpose TEXT NOT NULL,terms_version TEXT NOT NULL,privacy_version TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT (datetime('now')));
+ALTER TABLE email_outbox RENAME TO email_outbox_v4;
+DROP INDEX idx_email_outbox_ready;
+CREATE TABLE email_outbox(id INTEGER PRIMARY KEY,recipient TEXT NOT NULL,kind TEXT NOT NULL CHECK(kind IN ('application-received','organization-new-application','application-status','email-verification','password-reset')),payload_json TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','sending','sent','failed')),attempts INTEGER NOT NULL DEFAULT 0,next_attempt_at TEXT NOT NULL DEFAULT (datetime('now')),locked_at TEXT,last_error TEXT,created_at TEXT NOT NULL DEFAULT (datetime('now')),sent_at TEXT);
+INSERT INTO email_outbox SELECT * FROM email_outbox_v4;
+DROP TABLE email_outbox_v4;
+CREATE INDEX idx_email_outbox_ready ON email_outbox(status,next_attempt_at,id);

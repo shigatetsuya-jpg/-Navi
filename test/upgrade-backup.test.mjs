@@ -19,5 +19,5 @@ test('existing application data is backed up before notification schema upgrade'
  const before=new DatabaseSync(join(dir,'backups',files[0]),{readOnly:true});
  try{assert.deepEqual(before.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(r=>r.version),[1,2]);assert.equal(before.prepare('SELECT name FROM circles').get().name,'Existing Club');assert.equal(before.prepare("SELECT count(*) n FROM sqlite_master WHERE name='email_outbox'").get().n,0)}finally{before.close()}
  const after=new DatabaseSync(path,{readOnly:true});
- try{assert.deepEqual(after.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(r=>r.version),[1,2,3,4]);assert.equal(after.prepare('SELECT name FROM circles').get().name,'Existing Club')}finally{after.close()}
+ try{assert.deepEqual(after.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(r=>r.version),[1,2,3,4,5]);assert.equal(after.prepare('SELECT name FROM circles').get().name,'Existing Club')}finally{after.close()}
 });

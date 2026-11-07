@@ -4,19 +4,22 @@ import { mkdtemp,rm,readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
 const project=new URL('../../',import.meta.url).pathname.replace(/\/$/,''),dir=await mkdtemp(join(tmpdir(),'navi-ui-')),port=33179;
 const child=spawn(process.execPath,['--import',project+'/test/fixtures/mail-transport.mjs',project+'/server.mjs'],{cwd:project,env:{...process.env,DB_PATH:join(dir,'db.sqlite'),PORT:String(port),HOST:'127.0.0.1',EMAIL_FROM:'test@example.test',RESEND_API_KEY:'test-only',EMAIL_DELIVERY_DISABLED:'0',TEST_MAIL_LOG:join(dir,'mails.jsonl')},stdio:'ignore'});
 let browser;
 try{
  let ready=false;for(let i=0;i<100;i++){try{if((await fetch(`http://127.0.0.1:${port}/health`)).ok){ready=true;break}}catch{}await new Promise(r=>setTimeout(r,30))}assert.ok(ready);
  browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox'],headless:true});
- const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto(`http://127.0.0.1:${port}/account.html`);
+ const db=new DatabaseSync(join(dir,'db.sqlite'));db.exec("INSERT INTO circles(id,name,university,category,campus,days,periods,published,verified) VALUES(1,'音楽テスト団体','Example University','音楽','早稲田','月','2',1,1)");db.close();
+ const page=await browser.newPage({viewport:{width:390,height:844}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(`http://127.0.0.1:${port}/`);await page.locator('#q').fill('音楽');await page.locator('[data-slot="月-2"]').click();await page.locator('#schedule-filter').check();await page.locator('#fav-toggle').click();await page.getByRole('heading',{name:'会員登録すると使えます'}).waitFor();await page.locator('.modal a').click();
  const form=page.locator('#register-form');
  for(const [name,value] of Object.entries({display_name:'UI Test',email:'ui@example.test',password:'long-test-password-123',university:'Example University',school_year:'1年'}))await form.locator(`[name=${name}]`).fill(value);
+ await form.locator('[name=accept_terms]').check();await form.locator('[name=accept_privacy]').check();
  await form.locator('button[type=submit],button:not([type])').click();
  await page.locator('#verification-panel').waitFor({state:'visible'});
- await page.locator('#verification-panel a').click();
+ await page.goto(`http://127.0.0.1:${port}/settings.html`);await page.locator('#account-deletion').waitFor({state:'visible'});assert.ok(!await page.locator('#member-settings').isVisible());await page.goto(`http://127.0.0.1:${port}/dashboard.html`);
  await page.locator('#resend-verification').waitFor({state:'visible'});
  assert.match(await page.locator('#email-status-copy').innerText(),/未確認/);
  await page.locator('#resend-verification').click();
@@ -30,6 +33,10 @@ try{
  await page.goto(`http://127.0.0.1:${port}/dashboard.html`);
  await page.waitForFunction(()=>document.querySelector('#email-status-copy').textContent.includes('確認済み'));
  assert.ok(!await page.locator('#resend-verification').isVisible());
+ await page.goto(`http://127.0.0.1:${port}/`);await page.locator('[data-fav="1"]').waitFor();assert.equal(await page.locator('#q').inputValue(),'音楽');assert.ok(await page.locator('#schedule-filter').isChecked());assert.ok(await page.locator('[data-slot="月-2"]').evaluate(e=>e.classList.contains('available')));await page.locator('[data-fav="1"]').click();await page.waitForFunction(()=>document.querySelector('#fav-count').textContent==='1');assert.deepEqual(await(await page.request.get(`http://127.0.0.1:${port}/api/favorites`)).json(),[1]);
+ const footerLinks=await page.locator('footer a').allTextContents();for(const title of ['利用規約','プライバシーポリシー','お問い合わせ','運営者情報','免責事項'])assert.ok(footerLinks.includes(title));
+ await page.goto(`http://127.0.0.1:${port}/contact.html?circle=1`);const support=page.locator('#support-form');await support.locator('[name=email]').fill('reply@example.test');await support.locator('[name=message]').fill('この団体の活動曜日を確認してください。');await support.locator('[name=accept_privacy]').check();await support.locator('button').click();await page.waitForFunction(()=>document.querySelector('#notice').textContent.includes('受け付けました'));
+ await page.goto(`http://127.0.0.1:${port}/settings.html`);const deletion=page.locator('#delete-account-form');await deletion.locator('[name=password]').fill('long-test-password-123');page.once('dialog',d=>d.accept());await deletion.locator('button').click();await page.waitForURL('**/account.html?deleted=1');assert.equal((await(await page.request.get(`http://127.0.0.1:${port}/api/auth/me`)).json()).account,null);
  assert.deepEqual(errors,[]);
- console.log('PASS: browser registration, verification guidance, dashboard status and resend, explicit confirmation, token removal from URL; no browser errors');
+ console.log('PASS: guest restrictions, filter/timetable inheritance, member-only favorites, footer links, browser registration, verification guidance, dashboard status and resend, explicit confirmation, token removal from URL, inquiry submission and self-deletion; no browser errors');
 }finally{if(browser)await browser.close();if(child.exitCode===null){child.kill();await new Promise(r=>child.once('exit',r))}await rm(dir,{recursive:true,force:true})}
