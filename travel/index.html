@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1f6feb">
+<title>たびナビ｜観光プランナー</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  :root {
+    --pri: #1f6feb; --pri-dark: #1857c0; --pri-soft: #e8f0fe;
+    --ink: #1f2328; --sub: #6b7280; --bg: #f6f7f9; --card: #fff; --line: #e5e7eb;
+    --ok: #1e8a4c; --ok-soft: #e5f6ec; --warn: #b26a00; --warn-soft: #fff4e0; --ng: #c93520; --ng-soft: #fde8e4;
+    --radius: 14px; --shadow: 0 2px 10px rgba(20, 30, 50, .08);
+    --nav-h: 60px; --safe-b: env(safe-area-inset-bottom, 0px);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body { font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.6; overscroll-behavior: none; }
+  button { font-family: inherit; cursor: pointer; color: inherit; }
+  input, select { font-family: inherit; font-size: 16px; }
+  a { color: var(--pri); }
+
+  /* ---------- layout ---------- */
+  .view { display: none; min-height: 100%; padding-bottom: calc(var(--nav-h) + var(--safe-b) + 16px); }
+  .view.active { display: block; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  .topbar { position: sticky; top: 0; z-index: 500; background: rgba(255,255,255,.96); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); }
+  .topbar .wrap { padding: 10px 16px; display: flex; align-items: center; gap: 10px; }
+  .topbar h1 { font-size: 17px; font-weight: 800; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .logo-mark { width: 28px; height: 28px; border-radius: 8px; background: var(--pri); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+
+  /* bottom nav */
+  nav.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000; background: #fff; border-top: 1px solid var(--line); display: flex; height: calc(var(--nav-h) + var(--safe-b)); padding-bottom: var(--safe-b); }
+  nav.tabbar button { flex: 1; border: none; background: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 11px; color: var(--sub); }
+  nav.tabbar button .ic { font-size: 20px; line-height: 1; }
+  nav.tabbar button.active { color: var(--pri); font-weight: 700; }
+
+  /* ---------- common ---------- */
+  .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; margin-bottom: 14px; }
+  .card h2 { font-size: 15px; margin-bottom: 10px; }
+  .btn { border: none; border-radius: 999px; font-weight: 700; font-size: 14px; padding: 10px 18px; background: var(--pri-soft); color: var(--pri); }
+  .btn-pri { background: var(--pri); color: #fff; }
+  .btn-pri:active { background: var(--pri-dark); }
+  .btn-sm { font-size: 12px; padding: 6px 12px; }
+  .btn-ghost { background: none; border: 1px solid var(--line); color: var(--ink); }
+  .btn-block { width: 100%; padding: 14px; font-size: 16px; }
+  .icon-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: #fff; font-size: 16px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .muted { color: var(--sub); font-size: 12px; }
+  .note { font-size: 11px; color: var(--sub); margin-top: 8px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .row > * { flex: 1; min-width: 130px; }
+  label.f { display: block; font-size: 12px; font-weight: 700; color: #4b5563; margin: 12px 0 4px; }
+  .inp { width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: #fff; }
+  .inp:focus { outline: 2px solid var(--pri-soft); border-color: var(--pri); }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 7px 13px; font-size: 13px; white-space: nowrap; }
+  .chip.on { background: var(--pri); border-color: var(--pri); color: #fff; font-weight: 700; }
+  .seg { display: flex; background: #eef0f3; border-radius: 10px; padding: 3px; gap: 3px; }
+  .seg button { flex: 1; border: none; background: none; border-radius: 8px; padding: 8px 10px; font-size: 13px; white-space: nowrap; }
+  .seg button.on { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.12); font-weight: 700; color: var(--pri); }
+  .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+  .lv0 { background: var(--ok-soft); color: var(--ok); }
+  .lv1 { background: var(--warn-soft); color: var(--warn); }
+  .lv2 { background: var(--ng-soft); color: var(--ng); }
+  .empty { text-align: center; color: var(--sub); padding: 40px 16px; }
+  .empty .big { font-size: 40px; }
+
+  /* toast */
+  #toast { position: fixed; left: 50%; bottom: calc(var(--nav-h) + var(--safe-b) + 16px); transform: translateX(-50%) translateY(20px); background: #1f2328; color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 13px; opacity: 0; pointer-events: none; transition: .25s; z-index: 3000; max-width: calc(100% - 32px); }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ---------- plan form ---------- */
+  .hero { background: linear-gradient(135deg, #1f6feb, #5b9dff); color: #fff; border-radius: var(--radius); padding: 20px 18px; margin-bottom: 14px; }
+  .hero h2 { font-size: 20px; margin-bottom: 4px; }
+  .hero p { font-size: 13px; opacity: .92; }
+
+  /* ---------- trip view ---------- */
+  .trip-layout { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  @media (min-width: 900px) { .trip-layout { grid-template-columns: 420px 1fr; } .trip-map-wrap { position: sticky; top: 70px; height: calc(100vh - 160px); } .trip-subtabs { display: none !important; } .trip-pane { display: block !important; } }
+  .trip-subtabs { margin-bottom: 12px; }
+  .trip-map-wrap { height: 60vh; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+  #tripMap { width: 100%; height: 100%; }
+  .daytabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 10px; scrollbar-width: none; }
+  .daytabs::-webkit-scrollbar { display: none; }
+  .summary { display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--sub); margin-bottom: 10px; }
+  .summary b { color: var(--ink); }
+  .tl { position: relative; }
+  .tl-move { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--sub); padding: 4px 0 4px 18px; border-left: 2px dashed var(--line); margin-left: 15px; }
+  .tl-stop { display: flex; gap: 10px; background: #fff; border-radius: 12px; box-shadow: var(--shadow); padding: 12px; align-items: flex-start; }
+  .tl-num { width: 30px; height: 30px; border-radius: 50%; color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .tl-body { flex: 1; min-width: 0; }
+  .tl-time { font-size: 12px; color: var(--sub); }
+  .tl-name { font-weight: 700; font-size: 15px; cursor: pointer; }
+  .tl-warn { font-size: 11px; color: var(--ng); font-weight: 700; }
+  .tl-actions { display: flex; flex-direction: column; gap: 4px; }
+  .tl-actions button { width: 30px; height: 28px; border: 1px solid var(--line); background: #fff; border-radius: 8px; font-size: 13px; }
+  .tl-actions button:disabled { opacity: .3; }
+  .tl-btns { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .tl-btns .btn { padding: 5px 10px; }
+  .tl-endpoint { display: flex; gap: 10px; align-items: center; font-size: 13px; color: var(--sub); padding: 6px 0; }
+  .tl-endpoint .dot { width: 30px; height: 30px; border-radius: 50%; background: #eef0f3; display: flex; align-items: center; justify-content: center; }
+
+  /* ---------- cost ---------- */
+  .cost-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .cost-row:last-child { border-bottom: none; }
+  .cost-row .lbl { font-weight: 700; font-size: 14px; }
+  .cost-row .src { font-size: 11px; color: var(--sub); }
+  .cost-row .amt { font-weight: 800; white-space: nowrap; text-align: right; }
+  .cost-total { font-size: 26px; font-weight: 800; }
+  .budget-bar { height: 10px; background: #eef0f3; border-radius: 999px; position: relative; margin: 12px 0 6px; overflow: hidden; }
+  .budget-bar .rng { position: absolute; top: 0; bottom: 0; background: var(--pri); opacity: .55; border-radius: 999px; }
+  .budget-bar .bud { position: absolute; top: -2px; bottom: -2px; width: 3px; background: var(--ink); }
+
+  /* ---------- local (map) mode ---------- */
+  #view-local { padding: 0; position: fixed; inset: 0; bottom: calc(var(--nav-h) + var(--safe-b)); }
+  #view-local.active { display: block; }
+  #localMap { position: absolute; inset: 0; }
+  .map-top { position: absolute; top: 0; left: 0; right: 0; z-index: 600; padding: 10px 10px 0; padding-top: max(10px, env(safe-area-inset-top)); pointer-events: none; }
+  .map-top > * { pointer-events: auto; }
+  .filter-chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
+  .filter-chips::-webkit-scrollbar { display: none; }
+  .filter-chips .chip { box-shadow: 0 1px 4px rgba(0,0,0,.15); border: none; }
+  .filter-chips select.chip { max-width: 160px; appearance: none; -webkit-appearance: none; font-size: 13px; padding-right: 22px; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E") no-repeat right 9px center; }
+  .filter-chips select.chip.on { background-color: var(--pri); color: #fff; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23fff'/%3E%3C/svg%3E"); }
+  .demo-banner { display: inline-block; font-size: 11px; background: rgba(31,35,40,.82); color: #fff; padding: 4px 10px; border-radius: 999px; margin-top: 2px; }
+  .map-fabs { position: absolute; right: 10px; z-index: 600; display: flex; flex-direction: column; gap: 8px; transition: bottom .25s; }
+  .fab { width: 44px; height: 44px; border-radius: 50%; border: none; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.2); font-size: 18px; display: flex; align-items: center; justify-content: center; }
+  .fab.on { color: var(--pri); }
+  #compass span { display: inline-block; transition: transform .2s; }
+
+  /* bottom sheet (3 段階：min / half / full) */
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 700; background: #fff; border-radius: 18px 18px 0 0; box-shadow: 0 -4px 20px rgba(0,0,0,.15); display: flex; flex-direction: column; will-change: transform; touch-action: none; }
+  .sheet.anim { transition: transform .28s cubic-bezier(.2,.8,.2,1); }
+  .sheet-handle { padding: 8px 16px 6px; cursor: grab; flex-shrink: 0; }
+  .sheet-handle::before { content: ""; display: block; width: 40px; height: 5px; border-radius: 3px; background: #d1d5db; margin: 0 auto 8px; }
+  .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .sheet-head b { font-size: 15px; }
+  .sheet-body { flex: 1; overflow-y: auto; padding: 0 12px 16px; touch-action: pan-y; overscroll-behavior: contain; }
+  .spot-card { display: flex; gap: 10px; padding: 10px; border-radius: 12px; border: 2px solid transparent; margin-bottom: 8px; background: #fafbfc; cursor: pointer; }
+  .spot-card.hl { border-color: var(--pri); background: var(--pri-soft); }
+  .spot-thumb { width: 64px; height: 64px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+  .spot-info { flex: 1; min-width: 0; }
+  .spot-info .nm { font-weight: 700; font-size: 14px; }
+  .spot-info .meta { font-size: 12px; color: var(--sub); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .fav-btn { border: none; background: none; font-size: 20px; padding: 0 4px; align-self: flex-start; }
+
+  /* spot detail (sheet と旅程画面で共用) */
+  .detail-photo { height: 140px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 56px; margin-bottom: 10px; position: relative; }
+  .detail-photo .cap { position: absolute; right: 8px; bottom: 6px; font-size: 10px; color: rgba(0,0,0,.45); }
+  .detail h3 { font-size: 18px; }
+  .kv { display: grid; grid-template-columns: 80px 1fr; gap: 6px 10px; font-size: 13px; margin: 10px 0; }
+  .kv dt { color: var(--sub); }
+  .crowd-chart { display: flex; align-items: flex-end; gap: 3px; height: 54px; margin-top: 6px; }
+  .crowd-chart div { flex: 1; border-radius: 3px 3px 0 0; position: relative; }
+  .crowd-chart div.now { outline: 2px solid var(--ink); }
+  .crowd-axis { display: flex; justify-content: space-between; font-size: 10px; color: var(--sub); }
+  .route-cmp { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 0; }
+  .route-cmp button { border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 8px 4px; font-size: 12px; }
+  .route-cmp button.on { border-color: var(--pri); background: var(--pri-soft); color: var(--pri); font-weight: 700; }
+  .route-cmp b { display: block; font-size: 16px; }
+  .detail-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .detail-actions .btn { flex: 1; min-width: 140px; }
+
+  /* modal（旅程画面のスポット詳細・差し替え） */
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 2000; display: none; align-items: flex-end; justify-content: center; }
+  .modal-bg.show { display: flex; }
+  .modal { background: #fff; width: 100%; max-width: 560px; max-height: 85vh; overflow-y: auto; border-radius: 18px 18px 0 0; padding: 16px 16px calc(16px + var(--safe-b)); animation: up .25s; }
+  @media (min-width: 600px) { .modal-bg { align-items: center; } .modal { border-radius: 18px; } }
+  @keyframes up { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .modal-close { float: right; }
+
+  /* map markers */
+  .pin { width: 28px; height: 28px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,.35); border: 2px solid #fff; }
+  .pin span { transform: rotate(45deg); color: #fff; font-weight: 800; font-size: 12px; }
+  .pin.sm span { font-size: 13px; }
+  .pin.hl { transform: rotate(-45deg) scale(1.3); z-index: 1000; }
+  .me-dot { width: 18px; height: 18px; border-radius: 50%; background: var(--pri); border: 3px solid #fff; box-shadow: 0 0 0 6px rgba(31,111,235,.25); position: relative; }
+  .me-dot .cone { position: absolute; left: 50%; top: 50%; width: 0; height: 0; border-left: 9px solid transparent; border-right: 9px solid transparent; border-bottom: 22px solid rgba(31,111,235,.35); transform-origin: 50% 100%; margin-left: -9px; margin-top: -30px; display: none; }
+  .leaflet-container { font-family: inherit; }
+
+  /* my trips */
+  .trip-item { display: flex; align-items: center; gap: 10px; }
+  .trip-item .ti { flex: 1; min-width: 0; cursor: pointer; }
+  .trip-item .ti b { display: block; }
+</style>
+</head>
+<body>
+
+<!-- ============ 1. 計画（条件入力） ============ -->
+<section class="view active" id="view-plan">
+  <div class="topbar"><div class="wrap"><span class="logo-mark">旅</span><h1>たびナビ</h1></div></div>
+  <div class="wrap" style="max-width:640px">
+    <div class="hero">
+      <h2>条件を入れるだけで、旅程が完成。</h2>
+      <p>スポット選び・回る順番・移動時間・概算費用までまとめて作ります。現地では地図で「今から行ける場所」を探せます。</p>
+    </div>
+
+    <form id="planForm" class="card" autocomplete="off">
+      <h2>📍 どこへ行く？</h2>
+      <div class="row">
+        <div><label class="f" for="fCity">目的地</label>
+          <select class="inp" id="fCity"><option value="kyoto">京都</option><option value="tokyo">東京</option></select></div>
+        <div><label class="f" for="fOrigin">出発地</label>
+          <select class="inp" id="fOrigin"></select></div>
+      </div>
+
+      <h2 style="margin-top:18px">🗓️ 日程</h2>
+      <div class="row">
+        <div><label class="f" for="fDate">開始日</label><input class="inp" type="date" id="fDate"></div>
+        <div><label class="f" for="fDays">日数</label>
+          <select class="inp" id="fDays"><option value="1">日帰り</option><option value="2" selected>1泊2日</option><option value="3">2泊3日</option><option value="4">3泊4日</option></select></div>
+      </div>
+      <div class="row">
+        <div><label class="f" for="fStart">観光開始</label><input class="inp" type="time" id="fStart" value="09:00" step="900"></div>
+        <div><label class="f" for="fEnd">観光終了</label><input class="inp" type="time" id="fEnd" value="20:00" step="900"></div>
+      </div>
+
+      <h2 style="margin-top:18px">👥 人数・予算</h2>
+      <div class="row">
+        <div><label class="f" for="fPeople">人数</label><input class="inp" type="number" id="fPeople" min="1" max="20" value="2" inputmode="numeric"></div>
+        <div><label class="f" for="fBudget">予算上限（1人あたり・円）</label><input class="inp" type="number" id="fBudget" min="0" step="1000" value="40000" inputmode="numeric"></div>
+      </div>
+
+      <label class="f">現地での移動手段</label>
+      <div class="seg" id="fTransport">
+        <button type="button" data-v="walk">🚶 徒歩</button><button type="button" data-v="transit" class="on">🚃 公共交通</button><button type="button" data-v="car">🚗 車</button>
+      </div>
+
+      <h2 style="margin-top:18px">✨ 興味のあるジャンル（複数OK）</h2>
+      <div class="chips" id="fInterests"></div>
+
+      <label class="f">旅のペース</label>
+      <div class="seg" id="fPace">
+        <button type="button" data-v="relaxed">🐢 ゆったり</button><button type="button" data-v="normal" class="on">🚶 普通</button><button type="button" data-v="packed">⚡ 詰め込み</button>
+      </div>
+
+      <label class="f">除外条件</label>
+      <div class="chips" id="fExcl">
+        <button type="button" class="chip" data-v="queue">行列NG</button>
+        <button type="button" class="chip" data-v="rain">雨天：屋内中心</button>
+        <button type="button" class="chip" data-v="paid">入場無料のみ</button>
+      </div>
+
+      <button class="btn btn-pri btn-block" type="submit" style="margin-top:20px">旅程をつくる</button>
+      <p class="note">※ 現在はサンプルデータ（京都・東京）で動作するデモ版です。移動時間・費用・混雑はすべて目安です。</p>
+    </form>
+  </div>
+</section>
+
+<!-- ============ 2. 旅程結果 ============ -->
+<section class="view" id="view-trip">
+  <div class="topbar"><div class="wrap">
+    <span class="logo-mark">旅</span><h1 id="tripTitle">旅程</h1>
+    <button class="btn btn-sm" id="btnSave">保存</button>
+    <button class="btn btn-sm btn-pri" id="btnShare">共有</button>
+  </div></div>
+  <div class="wrap" id="tripWrap">
+    <div class="seg trip-subtabs" id="tripSubtabs"><button data-v="list" class="on">タイムライン</button><button data-v="map">地図</button></div>
+    <div class="trip-layout">
+      <div class="trip-pane" data-pane="list">
+        <div class="daytabs" id="dayTabs"></div>
+        <div class="summary" id="daySummary"></div>
+        <div class="tl" id="timeline"></div>
+        <p class="note">移動時間は直線距離からの推定です（本番では Routes API で検証予定）。▲▼で並べ替えると後続の時刻を自動で再計算します。</p>
+      </div>
+      <div class="trip-pane trip-map-wrap" data-pane="map" style="display:none"><div id="tripMap"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. 費用見積もり ============ -->
+<section class="view" id="view-cost">
+  <div class="topbar"><div class="wrap"><span class="logo-mark">旅</span><h1>概算費用</h1></div></div>
+  <div class="wrap" style="max-width:640px" id="costWrap"></div>
+</section>
+
+<!-- ============ 4. 現地モード（マップ） ============ -->
+<section class="view" id="view-local">
+  <div id="localMap"></div>
+  <div class="map-top">
+    <div class="filter-chips" id="localFilters">
+      <select class="chip" id="flWithin" aria-label="移動時間"><option value="0">距離：すべて</option><option value="15">15分以内</option><option value="30">30分以内</option><option value="60">60分以内</option></select>
+      <button class="chip" id="flOpen">今営業中</button>
+      <select class="chip" id="flCat" aria-label="ジャンル"><option value="">ジャンル</option></select>
+      <select class="chip" id="flBudget" aria-label="予算"><option value="">予算</option><option value="0">無料</option><option value="1000">〜1,000円</option><option value="3000">〜3,000円</option></select>
+      <button class="chip" id="flQuiet">混雑少なめ</button>
+      <button class="chip" id="flFav">★お気に入り</button>
+    </div>
+    <span class="demo-banner" id="demoBanner" style="display:none"></span>
+  </div>
+  <div class="map-fabs" id="mapFabs">
+    <button class="fab" id="compass" title="北を上に"><span>🧭</span></button>
+    <button class="fab on" id="btnFollow" title="現在地に追従">◎</button>
+  </div>
+  <div class="sheet" id="sheet">
+    <div class="sheet-handle" id="sheetHandle">
+      <div class="sheet-head"><b id="sheetTitle">周辺のスポット</b>
+        <div class="seg" style="width:auto" id="localViewSeg"><button data-v="map" class="on">地図</button><button data-v="list">リスト</button></div>
+      </div>
+    </div>
+    <div class="sheet-body" id="sheetBody"></div>
+  </div>
+</section>
+
+<!-- ============ 6. マイ旅程 ============ -->
+<section class="view" id="view-mine">
+  <div class="topbar"><div class="wrap"><span class="logo-mark">旅</span><h1>マイ旅程</h1></div></div>
+  <div class="wrap" style="max-width:640px" id="mineWrap"></div>
+</section>
+
+<!-- modal -->
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+<div id="toast"></div>
+
+<nav class="tabbar" id="tabbar">
+  <button data-view="plan" class="active"><span class="ic">📝</span>計画</button>
+  <button data-view="trip"><span class="ic">🗓️</span>旅程</button>
+  <button data-view="cost"><span class="ic">💴</span>費用</button>
+  <button data-view="local"><span class="ic">🗺️</span>現地</button>
+  <button data-view="mine"><span class="ic">📁</span>マイ旅程</button>
+</nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="spots.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
