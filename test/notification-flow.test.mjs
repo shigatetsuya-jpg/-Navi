@@ -58,7 +58,7 @@ test('confirmed addresses, expiry, resend, application capacity, isolation and m
  assert.equal((await api('/api/events/1/applications',1,{})).status,409);
  const second=await(await api('/api/events/1/applications',2,{})).json();assert.equal(second.status,'waitlisted');
  // An unrelated organization must never see or decide these applications.
- db.prepare('DELETE FROM circle_managers WHERE account_id=4').run();
+ db.prepare('DELETE FROM circle_managers WHERE account_id=4').run();db.prepare('UPDATE accounts SET email_verified=1 WHERE id=4').run();
  assert.deepEqual(await(await api('/api/org/applications',4)).json(),[]);
  assert.equal((await api(`/api/org/applications/${application.id}/decision`,4,{decision:'approve'})).status,404);
  assert.equal((await api(`/api/member/applications/${application.id}/cancel`,1,{})).status,200);

@@ -18,7 +18,7 @@ test('concurrent applications keep capacity and waitlist bounds, reject duplicat
  for(let i=0;i<100;i++){if(child.exitCode!==null)throw Error('server exited');try{if((await fetch(base+'/health')).ok){ready=true;break}}catch{}await new Promise(r=>setTimeout(r,30))}assert.ok(ready);
  db=new DatabaseSync(path);db.exec('PRAGMA busy_timeout=5000;PRAGMA foreign_keys=ON');
  for(let id=1;id<=20;id++){db.prepare('INSERT INTO accounts(id,email,display_name,account_type,salt,password_hash) VALUES(?,?,?,?,?,?)').run(id,`test${id}@example.test`,'Test','member','s','h');db.prepare('INSERT INTO account_sessions VALUES(?,?,?)').run(createHash('sha256').update('session'+id).digest('hex'),id,Date.now()+60000)}
- db.exec("INSERT INTO circles(id,name,university,published,verified) VALUES(1,'Club','University',1,1);INSERT INTO events(id,circle_id,title,capacity,status,starts_at) VALUES(1,1,'Capacity',3,'open','2099-04-01T00:00:00Z'),(2,1,'Duplicate',10,'open','2099-04-01T00:00:00Z'),(3,1,'Past',10,'open','2000-04-01T00:00:00Z')");
+ db.exec("UPDATE accounts SET email_verified=1;INSERT INTO circles(id,name,university,published,verified) VALUES(1,'Club','University',1,1);INSERT INTO events(id,circle_id,title,capacity,status,starts_at) VALUES(1,1,'Capacity',3,'open','2099-04-01T00:00:00Z'),(2,1,'Duplicate',10,'open','2099-04-01T00:00:00Z'),(3,1,'Past',10,'open','2000-04-01T00:00:00Z')");
  const apply=(event,id)=>fetch(base+`/api/events/${event}/applications`,{method:'POST',headers:{'content-type':'application/json',cookie:'sn_account=session'+id},body:'{}'});
  const responses=await Promise.all(Array.from({length:20},(_,i)=>apply(1,i+1)));
  assert.equal(responses.filter(r=>r.status===201).length,12);assert.equal(responses.filter(r=>r.status===409).length,8);

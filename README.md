@@ -96,14 +96,14 @@ Windowsでキーを作る例:
 
 2026-10-29時点の概算は、Webサービスが月7米ドル、1GBディスクが月0.25米ドルで、**合計月7.25米ドルから**（税・追加使用量・為替手数料別）です。Hobby workspace自体は無料ですが、永続ディスクを使うWebサービスは有料プランが必要です。ディスク利用中は一度に1インスタンスで動作し、再デプロイ時に数秒の停止があり得ます。料金は確定前にRender画面で再確認してください。
 
-参照: [Render Blueprint](https://render.com/docs/blueprint-spec)、[永続ディスク](https://render.com/docs/disks)、[料金](https://render.com/pricing)、[Node.jsバージョン設定](https://render.com/docs/node-version)。RenderのURLは環境変数 `RENDER_EXTERNAL_URL` から取得します。`PUBLIC_SITE_URL` を設定すると独自ドメインに切り替えられます。旧GitHub Pages版は参考用に公開を継続します。
+参照: [Render Blueprint](https://render.com/docs/blueprint-spec)、[永続ディスク](https://render.com/docs/disks)、[料金](https://render.com/pricing)、[Node.jsバージョン設定](https://render.com/docs/node-version)。RenderのURLは環境変数 `RENDER_EXTERNAL_URL` から取得します。`PUBLIC_SITE_URL` を設定すると独自ドメインに切り替えられます。旧GitHub Pages版は公開停止済みです。
 
 ## 仕様上の注意
 
 - `updated_at` はDBのUTC時刻です。画面では日付部分を表示します。
-- アプリ内申込や個人情報の収集は行わず、登録された公式フォーム/SNSへ案内します。
+- 外部公式フォーム/SNSを中心とする方針を検討中です。開発枝には会員・サイト内申込もあるため、本番へ一括反映せず公開範囲を確認します。
 - 初回DB構築は `migrations/001-init.sql` で行い、適用版を `schema_migrations` に記録します。将来の列変更には連番マイグレーションを追加してください。
-- 公開前に運営問い合わせ先、利用規約、プライバシー情報を用意してください。現状は未設定と表示します。
+- 開発枝にはTS名義の問い合わせフォームと規約5ページがあります。正式公開前に文面・保存期間・返信経路の確認が必要です。
 
 ## 検索エンジン向け設定
 
@@ -114,3 +114,7 @@ oindex を指定します。
 obots.txt ではページの巡回を遮らず、検索結果への登録だけを抑制します。
 - Google Search Consoleで所有権確認後、https://<公開ホスト>/sitemap.xml を送信してください。
 
+
+## 会員・団体管理の公開準備
+
+[20項目の不足と修正結果](docs/production-readiness-audit.md)と[TSの確認事項](docs/legal-review-checklist.md)を参照。確認メールが未設定の場合も、本登録を省略して会員機能を使えるようにはしません。実メール送信は送信元設定・承認・到達確認後です。

@@ -70,7 +70,10 @@
                 "T03",
                 "T04",
                 "T26",
-                "T27"
+                "T27",
+                "T29",
+                "T31",
+                "T32"
               ]
             }
           ]
@@ -216,7 +219,8 @@
                 "T13",
                 "T14",
                 "T15",
-                "T16"
+                "T16",
+                "T30"
               ]
             }
           ]
@@ -359,7 +363,7 @@
       "priority": "P0",
       "status": "in_progress",
       "approval_required": false,
-      "acceptance": "保存データと用途を棚卸しし文案作成。連絡先は本人の指定が必要",
+      "acceptance": "5ページ・フォーム・同意記録は開発枝で実装。TSによる文面・保存期間・返信経路・委託先の確認後に正式化",
       "owner": "agent",
       "contribution": "安心して使える基盤と離脱防止"
     },
@@ -712,6 +716,62 @@
       "acceptance": "通知対象の回答後に更新。フォーム遷移数を予約完了数としない",
       "owner": "agent",
       "contribution": "比較からイベント参加・公式窓口への接点を増やす"
+    },
+    {
+      "id": "T29",
+      "level": 4,
+      "parent_id": "S1.M1.I1",
+      "strategy_id": "S1",
+      "title": "会員認証・再設定・ゲスト制限・退会の実装検証",
+      "deadline": "2026-11-30",
+      "priority": "P0",
+      "status": "done",
+      "approval_required": false,
+      "acceptance": "12〜128文字のハッシュ化、確認必須、再設定の失効と全セッション破棄、ゲスト条件保持、本人削除を合成データで検証",
+      "owner": "agent",
+      "contribution": "安心して会員登録・団体運営を始められる基盤を整え、試用の離脱と情報漏えいを防ぐ"
+    },
+    {
+      "id": "T30",
+      "level": 4,
+      "parent_id": "S4.M1.I1",
+      "strategy_id": "S4",
+      "title": "団体の登録審査・重複防止・複数管理者と引継ぎの実装検証",
+      "deadline": "2026-11-30",
+      "priority": "P0",
+      "status": "done",
+      "approval_required": false,
+      "acceptance": "確認済み会員の登録・再審査、類似候補、運営承認の担当申請、オーナーによる管理者追加と引継ぎを検証",
+      "owner": "agent",
+      "contribution": "安心して会員登録・団体運営を始められる基盤を整え、試用の離脱と情報漏えいを防ぐ"
+    },
+    {
+      "id": "T31",
+      "level": 4,
+      "parent_id": "S1.M1.I1",
+      "strategy_id": "S1",
+      "title": "規約5ページ・同意記録・非公開問い合わせ窓口の実装検証",
+      "deadline": "2026-11-30",
+      "priority": "P0",
+      "status": "done",
+      "approval_required": false,
+      "acceptance": "TS・非公式表示、全画面フッター、版と同意日時、運営受信箱を検証。正式文面と保存期間はT03で確定",
+      "owner": "agent",
+      "contribution": "安心して会員登録・団体運営を始められる基盤を整え、試用の離脱と情報漏えいを防ぐ"
+    },
+    {
+      "id": "T32",
+      "level": 4,
+      "parent_id": "S1.M1.I1",
+      "strategy_id": "S1",
+      "title": "本番反映前の法務文面・メール設定・移行計画の確認",
+      "deadline": "2026-11-30",
+      "priority": "P0",
+      "status": "blocked_approval",
+      "approval_required": true,
+      "acceptance": "規約の運営確認、保存期間・委託先・返信経路、送信元と到達、本番バックアップ・復元・既存会員の認証移行を確認。公開と実送信は明示承認後",
+      "owner": "user_and_agent",
+      "contribution": "安心して会員登録・団体運営を始められる基盤を整え、試用の離脱と情報漏えいを防ぐ"
     }
   ],
   "operating_policy": {
@@ -719,7 +779,7 @@
     "publish_personal_name": false,
     "publish_support_email": false,
     "pilot_email_notifications": "priority under review; external-form outcomes unavailable without integration",
-    "domain_purchase": "paused_pending_product_direction",
+    "domain_purchase": "candidate_selected_purchase_requires_explicit_approval",
     "initial_product_direction": "proposal: compare circles, view events, register via external official forms, contact official SNS; in-app bookings on hold",
     "event_notifications": [
       "new-event",
