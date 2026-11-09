@@ -122,3 +122,13 @@ Render接続で本番shinkanavi-renderの9cb434bがliveと確認。API /api/circ
 ユーザーがRender/CloudflareでドメインとCNAME設定を実施。Render画面はroot証明書発行済み、www認証済み/Certificate Errorだったが、外部HTTPSはroot200、wwwからrootへの転送も正常。wwwのCNAMEはnavi-qzh7.onrender.com、妨げとなるAAAA/CAAなしを確認。画面の証明書ラベル自体は再確認待ち。
 
 検索向けcanonical/og:urlが旧URLのままだったため、接続作業の一環としてPUBLIC_SITE_URL=https://wase-circle-navi.comのみ既存環境変数へマージ更新。自動開始されたdep-dboj85hsrm7s73c5cscgが現行本番9cb434bでlive。root200、www→root、canonical・robotsのサイトマップ・sitemap内URL、health200を実応答で確認。公開団体は0件のまま。新機能の開発コードや架空団体の公開・実メール送信は実施していない。
+
+## 2026-11-09 検索結果向けのサイト名・独自アイコンを本番修正（T10）
+
+ユーザーが検索表示の名前とアイコンがRenderのままだと報告。本番トップのtitle/og:site_nameはワセサークルナビだった一方、favicon.ico/svgは404、独自faviconとWebSite構造化データがなかった。Googleの実検索結果の表示そのものは直接確認できていない。Google公式のサイト名・favicon・再クロールの仕様を参照した。
+
+現行本番9cb434bからfix/search-brandingを分離し、既存の「ワ」マークを96px PNG・ICO・Apple用180pxとして作成。全ページのアイコン指定と画像MIME、正式URLを使うWebSite JSON-LDとアプリ名を追加。既存テスト、390px Chromiumの構造化データ解析・正式URL一致・アイコン配信とMIME・各ページのリンク・CSP/ブラウザエラーなしを確認。PR #9を本番ブランチへマージし、a5ba64bのRender deploy dep-dbojdo8ae00c739pqb20がlive。本番HTMLのWebSite名/URL、アイコン3種200・適正MIME、health200を確認した。
+
+通知等の未公開開発枝は一括反映せず、公開団体・料金・送信設定も変更していない。開発枝にも同じブランド設定を同期し24テスト成功。Search Consoleの新ドメインプロパティ・再クロール申請・実際のGoogle検索表示更新は未確認/未実施で、反映保証はしない。docs/search-appearance.mdに利用者側の申請手順と限界を記録した。
+
+ユーザーの画面でroot/www両方のVerified/Certificate Issuedも確認済みとなり、証明書エラー表示の残課題は解消。

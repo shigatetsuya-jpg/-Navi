@@ -26,3 +26,5 @@
 2026-11-09：ユーザーが読みやすさのためwase-circle-navi.comへ変更し購入完了画面を提示。現在の取得済みドメインは必ずハイフン付きのwase-circle-navi.comを使う。旧候補wasecirclenavi.comは取得していない。DNS/TLSとメール送信元は未設定・未確認。登録者情報は保存しない。
 
 2026-11-09続報：wase-circle-navi.comのDNS・HTTPS、wwwからrootへの転送を外部確認。本番PUBLIC_SITE_URLを取得ドメインへマージ更新し、現行本番9cb434bの再デプロイliveとcanonical/robots/sitemapの切替を確認。www管理画面のCertificate Error表示は再確認待ち。通知等の開発枝・実メール送信は本番未反映。
+
+2026-11-09続報：root/wwwともユーザー画面でCertificate Issued確認。PR #9の独自faviconとWebSite構造化データは本番a5ba64bでlive、開発枝にも同期済み。以後のリリースでも削除しない。Googleの実検索表示更新・Search Consoleの新ドメイン再申請は未確認。docs/search-appearance.mdを参照。

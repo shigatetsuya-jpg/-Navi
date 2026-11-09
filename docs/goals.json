@@ -462,7 +462,7 @@
       "priority": "P1",
       "status": "in_progress",
       "approval_required": false,
-      "acceptance": "所有権・サイトマップ・検索登録を確認。掲載0件の案内と条件の見直し導線",
+      "acceptance": "正式ドメインのcanonicalとサイトマップ、WebSite構造化データと独自アイコンを整備。Search Consoleの新ドメイン所有権と再クロール申請・実際の検索表示は未確認",
       "owner": "agent",
       "contribution": "学生利用と申込の増加"
     },
@@ -794,7 +794,7 @@
     "publish_personal_name": false,
     "publish_support_email": false,
     "pilot_email_notifications": "explicit opt-in event subscriptions implemented locally; actual delivery requires sender setup, approval and reachability checks",
-    "domain_purchase": "2026-11-09: wase-circle-navi.com acquired; DNS and HTTPS root/www redirect verified; PUBLIC_SITE_URL switched and live; www dashboard certificate label pending recheck; sender setup pending",
+    "domain_purchase": "2026-11-09: wase-circle-navi.com acquired; DNS, HTTPS and root/www certificates confirmed; PUBLIC_SITE_URL live; sender setup pending",
     "initial_product_direction": "proposal: compare circles, view events, register via external official forms, contact official SNS; in-app bookings on hold",
     "event_notifications": [
       "new-event",
