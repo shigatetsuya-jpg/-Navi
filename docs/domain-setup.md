@@ -1,4 +1,6 @@
-# wasecirclenavi.com 取得と接続の計画
+# wase-circle-navi.com 接続の計画
+
+**現在の取得済みドメインは `wase-circle-navi.com`。** 2026年11月9日のユーザー提示画面「Your domain is ready」で確認。ハイフンなしの旧候補は以下の調査履歴にのみ残す。DNS・TLS・メール送信元は未設定/未確認。
 
 2026年11月7日。ユーザーはこの名前で調査・準備を進めることを了承。購入は別途承認待ち。
 
@@ -14,14 +16,14 @@ Porkbunは自動閲覧を拒否したため、その購入画面の確認は完�
 
 ## 承認・取得後の接続案
 1. DNSを管理するCloudflareゾーンで、既存レコードと登録状態を確認。
-2. Renderの既存-Naviサービスへwasecirclenavi.comをカスタムドメインとして追加。新規Webサービスは作らない。Renderのドメイン枠・追加料金を確認し、増額があれば承認前に止める。
+2. Renderの既存-Naviサービスへwase-circle-navi.comをカスタムドメインとして追加。新規Webサービスは作らない。Renderのドメイン枠・追加料金を確認し、増額があれば承認前に止める。
 3. Cloudflareの@をCNAMEでnavi-qzh7.onrender.comへ向ける（apex flattening）。wwwも同じ接続先へCNAME。初期設定はDNS onlyとし、Renderが実際に返した指示で最終確認する。別用途のレコードを消さない。
 4. RenderでドメインとTLSの検証を確認。既存URLは新ドメインの動作確認まで維持する。
-5. PUBLIC_SITE_URL=https://wasecirclenavi.com を設定。検索向けcanonical・サイトマップ・確認メールの遷移先を点検。切替後は別ホストになるためログインし直しが必要になる場合がある。
+5. PUBLIC_SITE_URL=https://wase-circle-navi.com を設定。検索向けcanonical・サイトマップ・確認メールの遷移先を点検。切替後は別ホストになるためログインし直しが必要になる場合がある。
 6. Search Consoleに新ドメインの所有権を確認し、サイトマップを送信する。所有権情報の追加や公開接続は承認範囲を確認して実施する。
 
 ## 通知メールは別のDNS設定
-サイトのCNAMEだけでは通知メールを送れるようにならない。送信専用サブドメイン（例：notify.wasecirclenavi.com）をResendへ登録し、Resendが返すDKIM/SPF等を確認してから設定する。DNS値や秘密キーを推測して作らない。送信元案は「ワセサークルナビ <no-reply@notify.wasecirclenavi.com>」。本人の非公開メールをReply-Toへ設定しない。
+サイトのCNAMEだけでは通知メールを送れるようにならない。送信専用サブドメイン（例：notify.wase-circle-navi.com）をResendへ登録し、Resendが返すDKIM/SPF等を確認してから設定する。DNS値や秘密キーを推測して作らない。送信元案は「ワセサークルナビ <no-reply@notify.wase-circle-navi.com>」。本人の非公開メールをReply-Toへ設定しない。
 送信元・受信先・本文を示して実送信の承認を得た後に本人宛てから確認する。契約・取得と実メール送信の承認は分ける。
 
 ## 2026年11月9日の再確認
@@ -52,3 +54,7 @@ Porkbunは自動閲覧を拒否したため、その購入画面の確認は完�
 3. 登録期間1年、ドメイン料金$11.17、追加オプションなしを確認する。登録者・決済情報はCloudflareの画面に直接入力する。
 4. 合計額・更新費・自動更新の有無と次回請求条件を確認し、承認条件と異なる追加料金・契約がなければ購入を確定する。表示が違えば確定前に相談する。
 5. 購入完了後、Cloudflareのドメイン一覧に追加されたことを確認し、取得完了を知らせてもらう。カード情報・登録者情報は共有不要。
+
+## 取得完了と現在の次の操作
+
+ユーザーが読みやすさからハイフン付きのwase-circle-navi.comへ変更し、購入完了画面を提示。取得完了を確認したが、税込決済額・請求書の取得はしていない。登録者情報は記録しない。接続対象は既存Renderサービスsrv-dbleblm417fc738aihmg（navi-qzh7.onrender.com）。連携にはカスタムドメイン追加ツールがないため、RenderのSettings → Custom Domainsで追加操作が必要。追加後の実際のDNS指示を確認してCloudflare DNSへ進める。

@@ -794,7 +794,7 @@
     "publish_personal_name": false,
     "publish_support_email": false,
     "pilot_email_notifications": "explicit opt-in event subscriptions implemented locally; actual delivery requires sender setup, approval and reachability checks",
-    "domain_purchase": "2026-11-09: user approved wasecirclenavi.com, 1 year, displayed USD 11.17, no add-ons; user-side authenticated checkout required; purchase not yet confirmed",
+    "domain_purchase": "2026-11-09: wase-circle-navi.com acquired by user; completion screenshot confirmed; DNS/TLS and sender setup pending; earlier unhyphenated candidate superseded",
     "initial_product_direction": "proposal: compare circles, view events, register via external official forms, contact official SNS; in-app bookings on hold",
     "event_notifications": [
       "new-event",
