@@ -116,3 +116,9 @@ Render接続で本番shinkanavi-renderの9cb434bがliveと確認。API /api/circ
 ## 2026-11-09 ハイフン付きドメインの取得完了
 
 ユーザーが読みやすさを理由にwase-circle-navi.comへ変更し、同価格の公開検索を確認後、購入完了画面「Your domain is ready」を提示。実際の取得済み名を目標ファイル・接続計画に反映した。旧候補のハイフンなしドメインは取得していない。Render接続で既存サービスのURLと稼働構成を確認。カスタムドメイン追加・Cloudflare DNS更新の操作ツールがなく、ユーザーの画面で追加する具体的な手順を案内する。DNS/TLS・本番コード反映・実メール送信は未実施。
+
+## 2026-11-09 ドメイン接続と本番の正式URL切替を完了
+
+ユーザーがRender/CloudflareでドメインとCNAME設定を実施。Render画面はroot証明書発行済み、www認証済み/Certificate Errorだったが、外部HTTPSはroot200、wwwからrootへの転送も正常。wwwのCNAMEはnavi-qzh7.onrender.com、妨げとなるAAAA/CAAなしを確認。画面の証明書ラベル自体は再確認待ち。
+
+検索向けcanonical/og:urlが旧URLのままだったため、接続作業の一環としてPUBLIC_SITE_URL=https://wase-circle-navi.comのみ既存環境変数へマージ更新。自動開始されたdep-dboj85hsrm7s73c5cscgが現行本番9cb434bでlive。root200、www→root、canonical・robotsのサイトマップ・sitemap内URL、health200を実応答で確認。公開団体は0件のまま。新機能の開発コードや架空団体の公開・実メール送信は実施していない。

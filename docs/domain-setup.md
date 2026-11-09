@@ -1,6 +1,6 @@
 # wase-circle-navi.com 接続の計画
 
-**現在の取得済みドメインは `wase-circle-navi.com`。** 2026年11月9日のユーザー提示画面「Your domain is ready」で確認。ハイフンなしの旧候補は以下の調査履歴にのみ残す。DNS・TLS・メール送信元は未設定/未確認。
+**現在の取得済みドメインは `wase-circle-navi.com`。** 2026年11月9日のユーザー提示画面「Your domain is ready」で確認。ハイフンなしの旧候補は以下の調査履歴にのみ残す。DNS接続とHTTPSアクセスは確認済み。wwwの管理画面上の証明書表示は再確認待ち、メール送信元は未設定。
 
 2026年11月7日。ユーザーはこの名前で調査・準備を進めることを了承。購入は別途承認待ち。
 
@@ -58,3 +58,11 @@ Porkbunは自動閲覧を拒否したため、その購入画面の確認は完�
 ## 取得完了と現在の次の操作
 
 ユーザーが読みやすさからハイフン付きのwase-circle-navi.comへ変更し、購入完了画面を提示。取得完了を確認したが、税込決済額・請求書の取得はしていない。登録者情報は記録しない。接続対象は既存Renderサービスsrv-dbleblm417fc738aihmg（navi-qzh7.onrender.com）。連携にはカスタムドメイン追加ツールがないため、RenderのSettings → Custom Domainsで追加操作が必要。追加後の実際のDNS指示を確認してCloudflare DNSへ進める。
+
+## 2026年11月9日 DNS接続とHTTPSの確認
+
+ユーザーがRenderへroot/wwwのカスタムドメインを追加し、CloudflareでCNAMEを設定。提示画面はrootがVerified/Certificate issued、wwwがVerified/Certificate Errorだった。外部からHTTPSを検証したところ、rootは200、wwwもHTTPSで接続できrootへ転送された。Google Public DNSではwwwのCNAMEがnavi-qzh7.onrender.com、妨げとなるAAAA/CAAレコードは確認されなかった。www証明書の管理画面表示は未再確認だが、この環境からのHTTPSアクセスは正常。
+
+本番HTMLのcanonical/og:urlが旧Render URLのままだったため、PUBLIC_SITE_URL=https://wase-circle-navi.comを他の環境変数とマージして更新。Renderが現行本番コミット9cb434bで自動的に再デプロイを開始した。新機能の開発枝は反映していない。再デプロイ後の正式URLとサイトマップを確認する。
+
+再デプロイdep-dboj85hsrm7s73c5cscgがliveとなり、正式URLの切替を実応答で確認。root 200、wwwからrootへHTTPSで転送、canonical、robots.txt内サイトマップ、sitemap.xml内URLがwase-circle-navi.comとなった。health 200、公開APIは引き続き[]。本番コミットは9cb434bのままで、通知等の新機能・実メール送信は反映していない。

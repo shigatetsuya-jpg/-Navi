@@ -770,7 +770,7 @@
       "priority": "P0",
       "status": "blocked_approval",
       "approval_required": true,
-      "acceptance": "規約の運営確認、保存期間・委託先・返信経路、送信元と到達、本番バックアップ・復元・既存会員の認証移行を確認。公開と実送信は明示承認後",
+      "acceptance": "ドメイン取得・DNS/HTTPS・正式URL設定は完了。規約の運営確認、保存期間・委託先・返信経路、メール送信元と到達、本番バックアップ・復元・既存会員の認証移行を確認。新機能公開と実送信は明示承認後",
       "owner": "user_and_agent",
       "contribution": "安心して会員登録・団体運営を始められる基盤を整え、試用の離脱と情報漏えいを防ぐ"
     },
@@ -794,7 +794,7 @@
     "publish_personal_name": false,
     "publish_support_email": false,
     "pilot_email_notifications": "explicit opt-in event subscriptions implemented locally; actual delivery requires sender setup, approval and reachability checks",
-    "domain_purchase": "2026-11-09: wase-circle-navi.com acquired by user; completion screenshot confirmed; DNS/TLS and sender setup pending; earlier unhyphenated candidate superseded",
+    "domain_purchase": "2026-11-09: wase-circle-navi.com acquired; DNS and HTTPS root/www redirect verified; PUBLIC_SITE_URL switched and live; www dashboard certificate label pending recheck; sender setup pending",
     "initial_product_direction": "proposal: compare circles, view events, register via external official forms, contact official SNS; in-app bookings on hold",
     "event_notifications": [
       "new-event",
