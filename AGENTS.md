@@ -28,3 +28,6 @@
 2026-11-09続報：wase-circle-navi.comのDNS・HTTPS、wwwからrootへの転送を外部確認。本番PUBLIC_SITE_URLを取得ドメインへマージ更新し、現行本番9cb434bの再デプロイliveとcanonical/robots/sitemapの切替を確認。www管理画面のCertificate Error表示は再確認待ち。通知等の開発枝・実メール送信は本番未反映。
 
 2026-11-09続報：root/wwwともユーザー画面でCertificate Issued確認。PR #9の独自faviconとWebSite構造化データは本番a5ba64bでlive、開発枝にも同期済み。以後のリリースでも削除しない。Googleの実検索表示更新・Search Consoleの新ドメイン再申請は未確認。docs/search-appearance.mdを参照。
+
+2026-11-09：PR #10の旧Renderホスト公開ページ→正式ドメイン301を本番8d553e2で確認。health/API/Google所有権ファイルは除外。旧サブドメインを単に無効化すると移転信号を失うため維持する。開発枝にも同期済みで後続リリース時に削除しない。Google旧検索情報の更新は未確認。
+Wasedaメールは公式案内で卒業後も利用可（生涯アドレス）。卒業時失効と断定しない。本人のメールは引き続き非公開。

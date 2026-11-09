@@ -1,4 +1,5 @@
 import http from 'node:http';
+import {legacyDomainDestination} from './scripts/legacy-domain-redirect.mjs';
 import { mkdirSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname, sep, dirname } from 'node:path';
@@ -70,6 +71,8 @@ const handleNotifications=notificationRoutes({db,getAccount,send,parseBody,email
 const handleFoundation=foundationRoutes({db,send,parseBody,getAccount,isAdmin,accountCookie,clean,emailEnabled,promoteWaitlisted,normalize,fields});
 const app=http.createServer(async(req,res)=>{try{
  const url=new URL(req.url,'http://localhost');
+ const movedTo=legacyDomainDestination(req,url,process.env.PUBLIC_SITE_URL);
+ if(movedTo){res.writeHead(301,{location:movedTo,'cache-control':'public, max-age=300'});return res.end();}
  if(req.method==='GET'&&url.pathname==='/health')return send(res,200,{ok:true});
  if(req.method==='GET'&&url.pathname==='/robots.txt'){const base=siteOrigin(req);res.writeHead(200,{'content-type':'text/plain; charset=utf-8','cache-control':'public, max-age=300','x-content-type-options':'nosniff'});return res.end(`User-agent: *\nAllow: /\nSitemap: ${base}/sitemap.xml\n`);}
  if(req.method==='GET'&&url.pathname==='/sitemap.xml'){const base=siteOrigin(req),rows=db.prepare(`SELECT id,updated_at FROM circles WHERE published=1 AND verified=1 ORDER BY id`).all(),urls=[{loc:base+'/',lastmod:new Date().toISOString().slice(0,10)},...rows.map(c=>({loc:base+'/circle/'+c.id,lastmod:String(c.updated_at||'').slice(0,10)}))];const xml='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+urls.map(x=>'<url><loc>'+htmlEscape(x.loc)+'</loc>'+( /^\d{4}-\d{2}-\d{2}$/.test(x.lastmod)?'<lastmod>'+x.lastmod+'</lastmod>':'')+'</url>').join('')+'</urlset>';res.writeHead(200,{'content-type':'application/xml; charset=utf-8','cache-control':'public, max-age=300','x-content-type-options':'nosniff'});return res.end(xml);}

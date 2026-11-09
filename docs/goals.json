@@ -462,7 +462,7 @@
       "priority": "P1",
       "status": "in_progress",
       "approval_required": false,
-      "acceptance": "正式ドメインのcanonicalとサイトマップ、WebSite構造化データと独自アイコンを整備。Search Consoleの新ドメイン所有権と再クロール申請・実際の検索表示は未確認",
+      "acceptance": "正式URL・WebSite構造化データ・独自アイコンと旧Renderからの301を本番確認。ユーザーが新サイトマップ送信。再クロール/移転申請と実際の検索表示更新は未確認",
       "owner": "agent",
       "contribution": "学生利用と申込の増加"
     },
