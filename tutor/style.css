@@ -153,6 +153,7 @@ p { margin: 0; }
 @media (min-width: 768px) { .case-grid { grid-template-columns: 1fr 1fr; } }
 .case-label { font-size: 13px; font-weight: 700; color: var(--leaf-deep); }
 .case h3 { font-size: 18px; margin: 6px 0 12px; }
+.case p + p { margin-top: 8px; }
 .case-data { margin-top: 12px; background: var(--leaf); border-radius: 10px; padding: 8px 12px; font-weight: 700; }
 
 /* 料金 */
